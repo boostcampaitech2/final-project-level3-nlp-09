@@ -5,26 +5,25 @@ import string
 from typing import List, Optional
 
 import pika
-from fastapi import FastAPI, File, UploadFile, HTTPException, Header
+from fastapi import FastAPI, File, UploadFile, HTTPException, Header, Request
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from aiofile import AIOFile, Writer, Reader
-
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM 
 
-upload_directory = os.environ['UPLOAD_PATH']
-access_token = os.environ['ACCESS_TOKEN']
-result_suffix = os.environ['RESULT_SUFFIX']
-array_suffix = os.environ['ARRAY_SUFFIX']
-queue_name = os.environ['QUEUE_NAME']
-rabbitmq_host = os.environ['RABBITMQ_HOST']
+# upload_directory = os.environ['UPLOAD_PATH']
+# access_token = os.environ['ACCESS_TOKEN']
+# result_suffix = os.environ['RESULT_SUFFIX']
+# array_suffix = os.environ['ARRAY_SUFFIX']
+# queue_name = os.environ['QUEUE_NAME']
+# rabbitmq_host = os.environ['RABBITMQ_HOST']
 
-try:
-    os.mkdir(upload_directory)
-    print(os.getcwd())
-except Exception as e:
-    print(e)
+# try:
+#     os.mkdir(upload_directory)
+#     print(os.getcwd())
+# except Exception as e:
+#     print(e)
 
 
 def random_string_with_time(length: int):
@@ -66,8 +65,9 @@ model = GPT2LMHeadModel.from_pretrained('skt/kogpt2-base-v2')
 
 # Get inference result
 @app.post("/chat")
-async def get_inferenec(item):
-    text = item['data']
+async def get_inferenec(item: Request):
+    item_dict = await item.json()
+    text = item_dict['data']
     input_ids = tokenizer.encode(text)
     gen_ids = model.generate(torch.tensor([input_ids]),
                             max_length=128,
