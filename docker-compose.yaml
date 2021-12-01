@@ -22,3 +22,10 @@ services:
     restart: unless-stopped
     depends_on:
       - rabbitmq
+  app:
+    build:
+      context: ./app
+      dockerfile: ./Dockerfile
+    restart: unless-stopped
+    ports:
+      - 5000:5000

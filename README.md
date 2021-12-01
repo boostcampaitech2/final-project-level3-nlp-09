@@ -6,7 +6,7 @@ final-project-level3-nlp-09 created by GitHub Classroom
 
 ### Run servers
 ```
-$ docker-compose up -d --build rabbitmq api
+$ docker-compose up -d --build rabbitmq api app
 ```
 ### Run web
 ```
