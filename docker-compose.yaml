@@ -6,6 +6,11 @@ services:
     ports:
         - 5672:5672
         - 15672:15672
+    environment: 
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASSWORD=guest
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
   api:
     build:
       context: ./api
