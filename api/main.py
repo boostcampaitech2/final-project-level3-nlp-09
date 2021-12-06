@@ -53,12 +53,11 @@ app.add_middleware(
     allow_headers=['*']
 )
 
-from transformers import PreTrainedTokenizerFast
+from transformers import PreTrainedTokenizerFast, GPT2LMHeadModel
 tokenizer = PreTrainedTokenizerFast.from_pretrained("skt/kogpt2-base-v2",
   bos_token='</s>', eos_token='</s>', unk_token='<unk>',
   pad_token='<pad>', mask_token='<mask>') 
 import torch
-from transformers import GPT2LMHeadModel
 
 model = GPT2LMHeadModel.from_pretrained('skt/kogpt2-base-v2')
 
