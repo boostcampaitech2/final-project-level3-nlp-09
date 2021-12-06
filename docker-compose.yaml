@@ -19,11 +19,15 @@ services:
       - 8080:8080
     environment:
       RABBITMQ_HOST: rabbitmq
-      QUEUE_NAME: IMAGE-PROCESS
+      QUEUE_NAME: CHAT-PROCESS
       RESULT_SUFFIX: _result
-      ARRAY_SUFFIX: _array
       ACCESS_TOKEN: TOKEN_FOR_DIRECT_UPLOAD
       UPLOAD_PATH: ./files
+      REDIS_STORE_DB_INDEX: 0
+      RABBITMQ_HOST: 127.0.0.1
+      RABBITMQ_USERNAME: guest  
+      RABBITMQ_PASSWORD: guest
+      RABBITMQ_PORT: 5672
     restart: unless-stopped
     depends_on:
       - rabbitmq
