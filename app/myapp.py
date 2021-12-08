@@ -18,7 +18,7 @@ async def get_bot_response():
     print(userText)
     data = {'data':userText}
     async with aiohttp.ClientSession() as session:
-        url = 'http://172.28.181.196:8080/chat'
+        url = 'http://0.0.0.0:9090/chat'
         async with session.post(url, json=data) as resp:
             return ((await resp.json())['result'])
 
