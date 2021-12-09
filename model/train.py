@@ -88,7 +88,7 @@ args= TrainingArguments(
 
 tokenized_train= tokenizer(
     list(train_df['question']),
-    # list(train_df['passage']),
+    list(train_df['passage']),
     truncation= 'only_second',
     max_length= 512,
     padding= 'max_length',
