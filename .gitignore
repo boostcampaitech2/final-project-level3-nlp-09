@@ -142,3 +142,6 @@ __pycache__/
 models/
 outputs/
 wandb/
+**/model/
+*.pt
+*.pth

@@ -7,7 +7,7 @@ final-project-level3-nlp-09 created by GitHub Classroom
 ## Model
 ### Inference
 ```sh
-python ./api/inference.py --output_dir ./outputs/test_dataset/ --dataset_name ./api/model/text_dict.json --model_name_or_path api/model/checkpoint-28500 --do_predict
+python ./QA_model/inference.py --output_dir ./outputs/test_dataset/ --dataset_name ./QA_model/model/text_dict.json --model_name_or_path ./QA_model/model/checkpoint-28500 --do_predict
 ```
 ### Run servers
 ```
