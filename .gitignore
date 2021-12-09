@@ -138,3 +138,7 @@ dmypy.json
 cython_debug/
 
 api/model
+__pycache__/
+models/
+outputs/
+wandb/
