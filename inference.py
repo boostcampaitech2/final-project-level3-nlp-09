@@ -14,8 +14,6 @@ import pandas as pd
 
 from datasets import (
     load_metric,
-    load_from_disk,
-    Sequence,
     Value,
     Features,
     Dataset,
@@ -34,7 +32,6 @@ from transformers import (
 
 from utils_qa import postprocess_qa_predictions_inf, check_no_error
 from trainer_qa import QuestionAnsweringTrainer
-#from elastic_retrieval import SparseRetrieval
 
 from arguments import (
     ModelArguments,
@@ -45,7 +42,7 @@ from arguments import (
 logger = logging.getLogger(__name__)
 
 
-def main():
+def main(question, context):
     # 가능한 arguments 들은 ./arguments.py 나 transformer package 안의 src/transformers/training_args.py 에서 확인 가능합니다.
     # --help flag 를 실행시켜서 확인할 수 도 있습니다.
 
@@ -54,10 +51,10 @@ def main():
     )
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
 
-    training_args.do_train = True
+    training_args.do_predict = True
 
     print(f"model is from {model_args.model_name_or_path}")
-    print(f"data is from {data_args.dataset_name}")
+    
 
     # logging 설정
     logging.basicConfig(
@@ -71,10 +68,7 @@ def main():
 
     # 모델을 초기화하기 전에 난수를 고정합니다.
     set_seed(training_args.seed)
-
-    datasets = load_from_disk(data_args.dataset_name)
-    print(datasets)
-
+    
     # AutoConfig를 이용하여 pretrained model 과 tokenizer를 불러옵니다.
     # argument로 원하는 모델 이름을 설정하면 옵션을 바꿀 수 있습니다.
     config = AutoConfig.from_pretrained(
@@ -93,80 +87,22 @@ def main():
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
         config=config,
     )
-
-    # True일 경우 : run passage retrieval
-    if data_args.eval_retrieval:
-        datasets = run_sparse_retrieval(
-            tokenizer.tokenize,
-            datasets,
-            training_args,
-            data_args,
-        )
-
-    # eval or predict mrc model
-    if training_args.do_eval or training_args.do_predict:
-        run_mrc(data_args, training_args, model_args, datasets, tokenizer, model)
-
-
-def run_sparse_retrieval(
-    tokenize_fn: Callable[[str], List[str]],
-    datasets: DatasetDict,
-    training_args: TrainingArguments,
-    data_args: DataTrainingArguments,
-    data_path: str = "../data",
-    context_path: str = "wikipedia_documents.json",
-) -> DatasetDict:
-
-    # Query에 맞는 Passage들을 Retrieval 합니다.
-    ##retrieval = SparseRetrieval()
-
-    # df = retrieval.retrieve_ES(
-    #     datasets["validation"],
-    #     topk=data_args.top_k_retrieval,
-    #     ner_path="./inference_tagged.csv",
-    # )
-
-    # dataframe을 불러옵니다
-    df = pd.read_csv('./abc.csv')
-    #df['context'] = df['context'].apply(eval)
-    for i in range(len(df)):
-        df['context'][i] = [df['context'][i][2:-2]]
-    print(df['context'][0])
-    print(type(df['context'][0]))
-    print(df['question'][0])
-    print('---------------------')
+    d = {'context' : [context], 'question' : [question], 'id' : ['mrc-1']}
+    df = pd.DataFrame(data=d)
     
-
-    # df.to_csv('check.csv')
-    # test data 에 대해선 정답이 없으므로 id question context 로만 데이터셋이 구성됩니다.
+    
     if training_args.do_predict:
         f = Features(
             {
-                "context": Sequence(feature=Value(dtype="string", id=None)),  # 바꿈!
+                "context": Value(dtype="string", id=None),  # 바꿈!
                 "id": Value(dtype="string", id=None),
                 "question": Value(dtype="string", id=None),
             }
         )
-
-    # train data 에 대해선 정답이 존재하므로 id question context answer 로 데이터셋이 구성됩니다.
-    elif training_args.do_eval:
-        f = Features(
-            {
-                "answers": Sequence(
-                    feature={
-                        "text": Value(dtype="string", id=None),
-                        "answer_start": Value(dtype="int32", id=None),
-                    },
-                    length=-1,
-                    id=None,
-                ),
-                "context": Sequence(feature=Value(dtype="string", id=None)),  # 바꿈!
-                "id": Value(dtype="string", id=None),
-                "question": Value(dtype="string", id=None),
-            }
-        )
-    datasets = DatasetDict({"validation": Dataset.from_pandas(df, features=f)})
-    return datasets
+        datasets = DatasetDict({'validation' : Dataset.from_pandas(df, features=f)})
+    # eval or predict mrc model
+    if training_args.do_eval or training_args.do_predict:
+        run_mrc(data_args, training_args, model_args, datasets, tokenizer, model)
 
 
 def run_mrc(
@@ -183,7 +119,6 @@ def run_mrc(
 
     question_column_name = "question" if "question" in column_names else column_names[0]
     context_column_name = "context" if "context" in column_names else column_names[1]
-    answer_column_name = "answers" if "answers" in column_names else column_names[2]
 
     # Padding에 대한 옵션을 설정합니다.
     # (question|context) 혹은 (context|question)로 세팅 가능합니다.
@@ -195,34 +130,11 @@ def run_mrc(
     )
     # 싹 바꿈!
     def prepare_validation_features(examples):
-        test_query = examples["question"]
-        test_contexts = examples["context"]
-        test_id = examples["id"]
-        #topk = len(test_contexts[0])
-        print('-----------------------------------------')
-        topk = 1
-        assert topk == data_args.top_k_retrieval, "topk not correct"
-        tq_final = []
-        tc_final = []
-        ti_final = []
-        for i in range(len(test_query)):
-            temp_q = [test_query[i] for _ in range(topk)]
-            temp_i = [test_id[i] for _ in range(topk)]
-            tq_final.extend(temp_q)
-            ti_final.extend(temp_i)
-            #a = ''.join(test_contexts[i])
-            #a = a[2:-2]
-            #tc_final.append(a)
-            tc_final.extend(test_contexts[i])
-        print(len(tq_final))
-        print(len(ti_final))
-        print(len(tc_final))
-        assert len(tq_final) == len(ti_final) and len(tq_final) == len(
-            tc_final
-        ), "final list length not correct"
+        # truncation과 padding(length가 짧을때만)을 통해 toknization을 진행하며, stride를 이용하여 overflow를 유지합니다.
+        # 각 example들은 이전의 context와 조금씩 겹치게됩니다.
         tokenized_examples = tokenizer(
-            tq_final if pad_on_right else tc_final,
-            tc_final if pad_on_right else tq_final,
+            examples[question_column_name if pad_on_right else context_column_name],
+            examples[context_column_name if pad_on_right else question_column_name],
             truncation="only_second" if pad_on_right else "only_first",
             max_length=max_seq_length,
             stride=data_args.doc_stride,
@@ -231,14 +143,24 @@ def run_mrc(
             return_token_type_ids=False,  # roberta모델을 사용할 경우 False, bert를 사용할 경우 True로 표기해야합니다.
             padding="max_length" if data_args.pad_to_max_length else False,
         )
-        sample_mapping = tokenized_examples["overflow_to_sample_mapping"]
+
+        # 길이가 긴 context가 등장할 경우 truncate를 진행해야하므로, 해당 데이터셋을 찾을 수 있도록 mapping 가능한 값이 필요합니다.
+        sample_mapping = tokenized_examples.pop("overflow_to_sample_mapping")
+
+        # evaluation을 위해, prediction을 context의 substring으로 변환해야합니다.
+        # corresponding example_id를 유지하고 offset mappings을 저장해야합니다.
         tokenized_examples["example_id"] = []
+
         for i in range(len(tokenized_examples["input_ids"])):
+            # sequence id를 설정합니다 (to know what is the context and what is the question).
             sequence_ids = tokenized_examples.sequence_ids(i)
             context_index = 1 if pad_on_right else 0
-            sample_index = sample_mapping[i]
-            tokenized_examples["example_id"].append(ti_final[sample_index])
 
+            # 하나의 example이 여러개의 span을 가질 수 있습니다.
+            sample_index = sample_mapping[i]
+            tokenized_examples["example_id"].append(examples["id"][sample_index])
+
+            # Set to None the offset_mapping을 None으로 설정해서 token position이 context의 일부인지 쉽게 판별 할 수 있습니다.
             tokenized_examples["offset_mapping"][i] = [
                 (o if sequence_ids[k] == context_index else None)
                 for k, o in enumerate(tokenized_examples["offset_mapping"][i])
@@ -276,26 +198,15 @@ def run_mrc(
             examples=examples,
             features=features,
             predictions=predictions,
-            topk=data_args.top_k_retrieval,
-            max_answer_length=data_args.max_answer_length,
+            max_answer_length=50,
             output_dir=training_args.output_dir,
         )
         # Metric을 구할 수 있도록 Format을 맞춰줍니다.
         formatted_predictions = [
             {"id": k, "prediction_text": v} for k, v in predictions.items()
         ]
-
         if training_args.do_predict:
             return formatted_predictions
-        elif training_args.do_eval:
-            references = [
-                {"id": ex["id"], "answers": ex[answer_column_name]}
-                for ex in datasets["validation"]
-            ]
-
-            return EvalPrediction(
-                predictions=formatted_predictions, label_ids=references
-            )
 
     metric = load_metric("squad")
 
@@ -323,19 +234,18 @@ def run_mrc(
         predictions = trainer.predict(
             test_dataset=eval_dataset, test_examples=datasets["validation"]
         )
-
         # predictions.json 은 postprocess_qa_predictions() 호출시 이미 저장됩니다.
         print(
             "No metric can be presented because there is no correct answer given. Job done!"
         )
 
-    if training_args.do_eval:
-        metrics = trainer.evaluate()
-        metrics["eval_samples"] = len(eval_dataset)
-
-        trainer.log_metrics("test", metrics)
-        trainer.save_metrics("test", metrics)
-
 
 if __name__ == "__main__":
-    main()
+    context=''
+    with open('/opt/ml/data/football.txt', 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+        for line in lines:
+            line = line.strip()
+            context=line
+    question = ''
+    main(question, context)
