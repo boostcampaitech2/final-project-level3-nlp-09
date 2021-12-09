@@ -4,6 +4,11 @@ final-project-level3-nlp-09 created by GitHub Classroom
     * cd front  
     * python myapp.py  
 
+## Model
+### Inference
+```sh
+python ./api/inference.py --output_dir ./outputs/test_dataset/ --dataset_name ./api/model/text_dict.json --model_name_or_path api/model/checkpoint-28500 --do_predict
+```
 ### Run servers
 ```
 $ docker-compose up -d --build rabbitmq api app

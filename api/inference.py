@@ -41,6 +41,9 @@ from arguments import (
     DataTrainingArguments,
 )
 
+import json
+
+from random_context import get_random_context
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +57,7 @@ def main():
     )
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
 
+    print(model_args, data_args)
     training_args.do_train = True
 
     print(f"model is from {model_args.model_name_or_path}")
@@ -69,11 +73,12 @@ def main():
     # verbosity 설정 : Transformers logger의 정보로 사용합니다 (on main process only)
     logger.info("Training/evaluation parameters %s", training_args)
 
+    print(training_args)
     # 모델을 초기화하기 전에 난수를 고정합니다.
     set_seed(training_args.seed)
 
-    datasets = load_from_disk(data_args.dataset_name)
-    print(datasets)
+    print(f'dataset_name={data_args.dataset_name}')
+    context, context_id = get_random_context(data_args.dataset_name)
 
     # AutoConfig를 이용하여 pretrained model 과 tokenizer를 불러옵니다.
     # argument로 원하는 모델 이름을 설정하면 옵션을 바꿀 수 있습니다.
@@ -94,96 +99,35 @@ def main():
         config=config,
     )
 
-    # True일 경우 : run passage retrieval
-    if data_args.eval_retrieval:
-        datasets = run_sparse_retrieval(
-            tokenizer.tokenize,
-            datasets,
-            training_args,
-            data_args,
-        )
-
     # eval or predict mrc model
     if training_args.do_eval or training_args.do_predict:
-        run_mrc(data_args, training_args, model_args, datasets, tokenizer, model)
+        for _ in range(5):
+            question = input().strip()
 
-
-def run_sparse_retrieval(
-    tokenize_fn: Callable[[str], List[str]],
-    datasets: DatasetDict,
-    training_args: TrainingArguments,
-    data_args: DataTrainingArguments,
-    data_path: str = "../data",
-    context_path: str = "wikipedia_documents.json",
-) -> DatasetDict:
-
-    # Query에 맞는 Passage들을 Retrieval 합니다.
-    ##retrieval = SparseRetrieval()
-
-    # df = retrieval.retrieve_ES(
-    #     datasets["validation"],
-    #     topk=data_args.top_k_retrieval,
-    #     ner_path="./inference_tagged.csv",
-    # )
-
-    # dataframe을 불러옵니다
-    df = pd.read_csv('./abc.csv')
-    #df['context'] = df['context'].apply(eval)
-    for i in range(len(df)):
-        df['context'][i] = [df['context'][i][2:-2]]
-    print(df['context'][0])
-    print(type(df['context'][0]))
-    print(df['question'][0])
-    print('---------------------')
-    
-
-    # df.to_csv('check.csv')
-    # test data 에 대해선 정답이 없으므로 id question context 로만 데이터셋이 구성됩니다.
-    if training_args.do_predict:
-        f = Features(
-            {
-                "context": Sequence(feature=Value(dtype="string", id=None)),  # 바꿈!
-                "id": Value(dtype="string", id=None),
-                "question": Value(dtype="string", id=None),
+            datasets = {
+                'validation':{
+                    'context': context,
+                    'question': question,
+                    'id': context_id
+                }
             }
-        )
-
-    # train data 에 대해선 정답이 존재하므로 id question context answer 로 데이터셋이 구성됩니다.
-    elif training_args.do_eval:
-        f = Features(
-            {
-                "answers": Sequence(
-                    feature={
-                        "text": Value(dtype="string", id=None),
-                        "answer_start": Value(dtype="int32", id=None),
-                    },
-                    length=-1,
-                    id=None,
-                ),
-                "context": Sequence(feature=Value(dtype="string", id=None)),  # 바꿈!
-                "id": Value(dtype="string", id=None),
-                "question": Value(dtype="string", id=None),
-            }
-        )
-    datasets = DatasetDict({"validation": Dataset.from_pandas(df, features=f)})
-    return datasets
-
+            run_mrc(data_args, training_args, model_args, datasets, tokenizer, model)
 
 def run_mrc(
     data_args: DataTrainingArguments,
     training_args: TrainingArguments,
     model_args: ModelArguments,
-    datasets: DatasetDict,
+    datasets: dict,
     tokenizer,
     model,
 ) -> NoReturn:
 
     # eval 혹은 prediction에서만 사용함
-    column_names = datasets["validation"].column_names
+    # column_names = datasets["validation"].column_names
 
-    question_column_name = "question" if "question" in column_names else column_names[0]
-    context_column_name = "context" if "context" in column_names else column_names[1]
-    answer_column_name = "answers" if "answers" in column_names else column_names[2]
+    question_column_name = "question"
+    context_column_name = "context"
+    answer_column_name = "answers"
 
     # Padding에 대한 옵션을 설정합니다.
     # (question|context) 혹은 (context|question)로 세팅 가능합니다.
@@ -246,8 +190,10 @@ def run_mrc(
         return tokenized_examples
 
     eval_dataset = datasets["validation"]
+    # eval_dataset = datasets
 
     # Validation Feature 생성
+    """
     eval_dataset = eval_dataset.map(
         prepare_validation_features,
         batched=True,
@@ -255,6 +201,9 @@ def run_mrc(
         remove_columns=column_names,
         load_from_cache_file=not data_args.overwrite_cache,
     )
+    """
+
+    eval_dataset = prepare_validation_features(eval_dataset)
 
     # Data collator
     # flag가 True이면 이미 max length로 padding된 상태입니다.
@@ -323,6 +272,8 @@ def run_mrc(
         predictions = trainer.predict(
             test_dataset=eval_dataset, test_examples=datasets["validation"]
         )
+
+        print(predictions)
 
         # predictions.json 은 postprocess_qa_predictions() 호출시 이미 저장됩니다.
         print(
