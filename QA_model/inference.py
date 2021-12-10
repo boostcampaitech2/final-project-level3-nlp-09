@@ -39,18 +39,32 @@ from arguments import (
 )
 
 from random_context import get_random_context
-
+from dataclasses import asdict, dataclass, field, replace
+from typing import Any, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 
 class QAInfernece:
     def __init__(self,
         output_dir = './outputs/',
+        dataset_name = './QA_model/model/text_dict.json',
+        model_name_or_path = './QA_model/model/checkpoint-28500'
         ) -> None:
         parser = HfArgumentParser(
             (ModelArguments, DataTrainingArguments, TrainingArguments)
         )
+ 
+        # print(f'parser={parser._actions}')
+
+        for p in parser._actions:
+            # print(p.option_strings)
+            if '--ouput_dir' in p.option_strings:
+                print(p)
+        parser._handle_conflict_resolve(None, [('output_dir', parser._actions[2])])
+        parser.add_argument('--output_dir', '--output_dir', default=output_dir, required=False)
         self.model_args, self.data_args, self.training_args = parser.parse_args_into_dataclasses()
+        self.data_args.dataset_name = dataset_name
+        self.training_args.model_name_or_path = model_name_or_path
 
         self.training_args.do_predict = True
 
