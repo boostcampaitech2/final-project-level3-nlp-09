@@ -528,17 +528,17 @@ def postprocess_qa_predictions_inf(
         for pred in predictions:
             offsets = pred.pop("offsets")
             if offsets[0]==0 and offsets[1]==0:
-                pred["text"] = "No Answer"
+                pred["text"] = "No answer"
                 continue
             pred["text"] = context[offsets[0] : offsets[1]]
 
         # rare edge case에는 null이 아닌 예측이 하나도 없으며 failure를 피하기 위해 fake prediction을 만듭니다.
         if len(predictions) == 0 or (
-            len(predictions) == 1 and predictions[0]["text"] == "No Answer"
+            len(predictions) == 1 and predictions[0]["text"] == "No answer"
         ):
 
             predictions.insert(
-                0, {"text": "No Answer", "start_logit": 0.0, "end_logit": 0.0, "score": 0.0}
+                0, {"text": "No answer", "start_logit": 0.0, "end_logit": 0.0, "score": 0.0}
             )
 
         # 모든 점수의 소프트맥스를 계산합니다(we do it with numpy to stay independent from torch/tf in this file, using the LogSumExp trick).

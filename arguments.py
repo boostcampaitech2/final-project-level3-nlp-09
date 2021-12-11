@@ -35,7 +35,7 @@ class DataTrainingArguments:
     """
 
     dataset_name: Optional[str] = field(
-        default="../data/mrc.csv",
+        default="../data/train_data_v3.csv",
         metadata={"help": "The name of the dataset to use."},
     )
     overwrite_cache: bool = field(

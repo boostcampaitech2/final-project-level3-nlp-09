@@ -35,7 +35,7 @@ from transformers import (
 from tokenizers import Tokenizer
 from tokenizers.models import WordPiece
 
-from utils_qa import postprocess_qa_predictions, check_no_error
+from utils_qa import postprocess_qa_predictions, check_no_error, postprocess_qa_predictions_inf
 from trainer_qa import QuestionAnsweringTrainer
 
 from arguments import (
@@ -73,7 +73,7 @@ def main():
     # [참고] argument를 manual하게 수정하고 싶은 경우에 아래와 같은 방식을 사용할 수 있습니다
     training_args = TrainingArguments(
         do_train=True,
-        output_dir="./models/mrc",
+        output_dir="./models/"+model_args.model_name_or_path+'5',
         overwrite_output_dir=True,
         evaluation_strategy="steps",
         per_device_train_batch_size=16,
@@ -121,7 +121,7 @@ def main():
     )
     
     df = pd.read_csv(data_args.dataset_name)
-    train_df = df.sample(frac = 0.8)
+    train_df = df.sample(frac = 0.8, random_state = 42)
     valid_df = df.drop(train_df.index)
     datasets = DatasetDict(
         {
@@ -166,7 +166,7 @@ def main():
         run = wandb.init(
             project="final project",
             entity="quarter100",
-            name='mrc',
+            name='mrc_'+model_args.model_name_or_path+'5',
             group="train"
         )
         run_mrc(data_args, training_args, model_args, datasets, tokenizer, model)
@@ -209,6 +209,10 @@ def run_mrc(
         # 각 example들은 이전의 context와 조금씩 겹치게됩니다.
         # 원본 데이터 context 전처리 및 그에 따른 answer_position 이동
         for i in range(len(examples[context_column_name])):
+            if examples[answer_column_name][i]=="No answer":
+                context = examples[context_column_name][i]
+                examples[context_column_name][i] = preprocess(context)
+                continue
             context = examples[context_column_name][i]
             answer_text = examples[answer_column_name][i]
             answer_start = examples[answer_start_column_name][i]
@@ -352,6 +356,10 @@ def run_mrc(
     
     def prepare_validation_preprocess(examples):
         for i in range(len(examples[context_column_name])):
+            if examples[answer_column_name][i]=="No answer":
+                context = examples[context_column_name][i]
+                context = preprocess(context)
+                continue
             context = examples[context_column_name][i]
             answer_text = examples[answer_column_name][i]
             answer_start = examples[answer_start_column_name][i]
@@ -397,7 +405,7 @@ def run_mrc(
     # Post-processing:
     def post_processing_function(examples, features, predictions, training_args):
         # Post-processing: start logits과 end logits을 original context의 정답과 match시킵니다.
-        predictions = postprocess_qa_predictions(
+        predictions = postprocess_qa_predictions_inf(
             examples=examples,
             features=features,
             predictions=predictions,
