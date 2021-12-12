@@ -31,7 +31,7 @@ from transformers import is_torch_available, PreTrainedTokenizerFast, TrainingAr
 from transformers.trainer_utils import get_last_checkpoint
 
 from datasets import DatasetDict
-from QA_model.arguments import (
+from arguments import (
     ModelArguments,
     DataTrainingArguments,
 )

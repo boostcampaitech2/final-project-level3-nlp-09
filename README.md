@@ -8,6 +8,8 @@ final-project-level3-nlp-09 created by GitHub Classroom
 ### Inference
 ```sh
 python ./QA_model/inference.py --output_dir ./outputs/test_dataset/ --dataset_name ./QA_model/model/text_dict.json --model_name_or_path ./QA_model/model/checkpoint-28500 --do_predict
+
+streamlit run ./QA_model/inference.py -- --output_dir ./outputs/test_dataset/ --dataset_name ./QA_model/model/text_dict.json --model_name_or_path ./QA_model/model/checkpoint-28500 --do_predict
 ```
 ### Run servers
 ```
@@ -33,7 +35,11 @@ $ API_URI=xxxx docker-compose up -d --build web
 [API document](api/README.md)
 
 # twenty-questions
-스무고개
+
+# pt ot onnx
+```sh
+python QA_model/convert_graph_to_onnx.py --pipeline question-answering --framework pt --model ./QA_model/model/checkpoint-28500  --quantize ./onnx/KLRL-QA.onnx
+```
 
 # 훈련
 python train.py 
@@ -45,5 +51,5 @@ TBD...
 [구글 드라이브](https://drive.google.com/drive/folders/1zXe4xHqX7kxOZIVjb73NW0rCZ3G7uUAX?usp=sharing)
 
 ```sh
-wget --load-cookies ~/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies ~/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=16f1Qc7t5uvJaDzjXsa53a9xo2kcgcLbp' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=16f1Qc7t5uvJaDzjXsa53a9xo2kcgcLbp" -O model.zip && rm -rf ~/cookies.txt
+wget --load-cookies ~/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies ~/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1ThqTAgV0NSiEhY0MzFF3XWbvvbzTdyiI' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1ThqTAgV0NSiEhY0MzFF3XWbvvbzTdyiI" -O model.zip && rm -rf ~/cookies.txt
 ```

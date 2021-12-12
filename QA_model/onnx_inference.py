@@ -45,6 +45,8 @@ logger = logging.getLogger(__name__)
 
 import pickle
 import os
+import onnxruntime
+
 class QAInference:
     def __init__(self,
         output_dir = './outputs/',
@@ -255,6 +257,16 @@ class QAInference:
 
         logger.info("*** Evaluate ***")
 
+        onnx_model_path = '/opt/ml/final-project-level3-nlp-09/QA_model/model/onnx/KLRL-QA-optimized-quantized.onnx'
+        print(onnxruntime)
+        session = onnxruntime.InferenceSession(onnx_model_path)
+        # session.run(None, ort_inputs)
+        # ort_inputs = {session.get_inputs()[0].name: input_ids.detach().cpu().numpy(), session.get_inputs()[1].name: input_mask.detach().cpu().numpy()}
+        ort_outs = session.run(["output"], eval_dataset)
+        print('========')
+        print(ort_outs)
+        print('========')
+
         predictions = trainer.predict(
             test_dataset=eval_dataset, test_examples=datasets["validation"]
         )
@@ -265,14 +277,16 @@ class QAInference:
         print(predictions[0]['prediction_text'])
         return predictions[0]['prediction_text']
 
-import streamlit as st
 
 if __name__ == "__main__":
+    onnx_model_path = '/opt/ml/final-project-level3-nlp-09/QA_model/model/onnx/KLRL-QA-optimized-quantized.onnx'
+    print(onnxruntime)
+    session = onnxruntime.InferenceSession(onnx_model_path)
     inf = QAInference()
 
     inf.set_context()
     for _ in range(5):
-       inf.set_question(st.text_input('Enter Question'))
-       inf.set_dataset()
-       # print(inf.run_mrc())
-       st.write('Answer:', inf.run_mrc())
+        print('Input Question')
+        inf.set_question(input().strip())
+        inf.set_dataset()
+        print(inf.run_mrc())

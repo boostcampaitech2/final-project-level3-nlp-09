@@ -271,8 +271,25 @@ if __name__ == "__main__":
     inf = QAInference()
 
     inf.set_context()
-    for _ in range(5):
-       inf.set_question(st.text_input('Enter Question'))
-       inf.set_dataset()
-       # print(inf.run_mrc())
-       st.write('Answer:', inf.run_mrc())
+    # for _ in range(5):
+    #    inf.set_question(st.text_input('Enter Question'))
+    #    inf.set_dataset()
+    #    # print(inf.run_mrc())
+    #    st.write('Answer:', inf.run_mrc())
+
+    def get_text():
+        input_text = st.text_input("You: ","So, what's in your mind")
+        return input_text
+
+    st.sidebar.title("NLP Bot")
+    st.title("""
+    NLP Bot  
+    NLP Bot is an NLP conversational chatterbot. Initialize the bot by clicking the "Initialize bot" button. 
+    """)
+            
+    inf.set_question(get_text())
+    inf.set_dataset()
+    if True:
+        st.text_area("Bot:", value=inf.run_mrc(), height=200, max_chars=None, key=None)
+    else:
+        st.text_area("Bot:", value="Please start the bot by clicking sidebar button", height=200, max_chars=None, key=None)
