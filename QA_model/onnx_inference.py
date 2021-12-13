@@ -259,7 +259,8 @@ class QAInference:
 
         onnx_model_path = '/opt/ml/final-project-level3-nlp-09/QA_model/model/onnx/KLRL-QA-optimized-quantized.onnx'
         print(onnxruntime)
-        session = onnxruntime.InferenceSession(onnx_model_path)
+        providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+        session = onnxruntime.InferenceSession(onnx_model_path, providers=providers)
         # session.run(None, ort_inputs)
         # ort_inputs = {session.get_inputs()[0].name: input_ids.detach().cpu().numpy(), session.get_inputs()[1].name: input_mask.detach().cpu().numpy()}
         ort_outs = session.run(["output"], eval_dataset)
@@ -281,7 +282,9 @@ class QAInference:
 if __name__ == "__main__":
     onnx_model_path = '/opt/ml/final-project-level3-nlp-09/QA_model/model/onnx/KLRL-QA-optimized-quantized.onnx'
     print(onnxruntime)
-    session = onnxruntime.InferenceSession(onnx_model_path)
+    providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+    session = onnxruntime.InferenceSession(onnx_model_path, providers=providers)
+    # session = onnxruntime.InferenceSession(onnx_model_path)
     inf = QAInference()
 
     inf.set_context()

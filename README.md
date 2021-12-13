@@ -9,7 +9,9 @@ final-project-level3-nlp-09 created by GitHub Classroom
 ```sh
 python ./QA_model/inference.py --output_dir ./outputs/test_dataset/ --dataset_name ./QA_model/model/text_dict.json --model_name_or_path ./QA_model/model/checkpoint-28500 --do_predict
 
-streamlit run ./QA_model/inference.py -- --output_dir ./outputs/test_dataset/ --dataset_name ./QA_model/model/text_dict.json --model_name_or_path ./QA_model/model/checkpoint-28500 --do_predict
+python ./QA_model/onnx_inference.py --output_dir ./outputs/test_dataset/ --dataset_name ./QA_model/model/text_dict.json --model_name_or_path ./QA_model/model/checkpoint-28500 --do_predict
+
+streamlit run ./QA_model/streamlit_inf.py -- --output_dir ./outputs/test_dataset/ --dataset_name ./QA_model/model/text_dict.json --model_name_or_path ./QA_model/model/checkpoint-28500 --do_predict
 ```
 ### Run servers
 ```
@@ -36,7 +38,7 @@ $ API_URI=xxxx docker-compose up -d --build web
 
 # twenty-questions
 
-# pt ot onnx
+# pt to onnx
 ```sh
 python QA_model/convert_graph_to_onnx.py --pipeline question-answering --framework pt --model ./QA_model/model/checkpoint-28500  --quantize ./onnx/KLRL-QA.onnx
 ```
