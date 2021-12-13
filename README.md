@@ -18,13 +18,17 @@ $ docker run --gpus all -it --name cudaenv -v `pwd`:/workspace/app nvcr.io/nvidi
 # Recommendation for pytorch
 $ docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -it --rm -v `pwd`:/workspace/app nvcr.io/nvidia/pytorch:21.11-py3
 ```
+
 ### Run
 ```sh
 # If container is stopped
 $ docker start cudaenv
 $ docker attach cudaenv
 ```
+---
+## Airflow
 
+[Docs](airflow/README.md)
 
 
 # API server
