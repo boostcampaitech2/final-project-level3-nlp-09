@@ -28,7 +28,7 @@ $ docker attach cudaenv
 ---
 ## Airflow
 
-[Docs](airflow/README.md)
+[Airflow documnet](airflow/README.md)
 
 
 # API server
