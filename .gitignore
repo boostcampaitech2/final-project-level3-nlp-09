@@ -146,3 +146,4 @@ wandb/
 *.pt
 *.pth
 *.onnx
+**/export/

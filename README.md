@@ -1,53 +1,62 @@
-# final-project-level3-nlp-09  
-final-project-level3-nlp-09 created by GitHub Classroom  
-* This is feat/front branch  
-    * cd front  
-    * python myapp.py  
-
-## Model
-### Inference
+# twenty-questions
+# Env Setting
+## Train, Inference env
 ```sh
-python ./QA_model/inference.py --output_dir ./outputs/test_dataset/ --dataset_name ./QA_model/model/text_dict.json --model_name_or_path ./QA_model/model/checkpoint-28500 --do_predict
-
-python ./QA_model/onnx_inference.py --output_dir ./outputs/test_dataset/ --dataset_name ./QA_model/model/text_dict.json --model_name_or_path ./QA_model/model/checkpoint-28500 --do_predict
-
-streamlit run ./QA_model/streamlit_inf.py -- --output_dir ./outputs/test_dataset/ --dataset_name ./QA_model/model/text_dict.json --model_name_or_path ./QA_model/model/checkpoint-28500 --do_predict
+pip install -r requiremnets
 ```
-### Run servers
+## TensorRT, ONNX CUDA container
+README.md의 모든 항목들 중 (cuda env)가 붙은 항목들은 해당 환경으로 실행
+### Container setting
+- Base or Recommendation 선택해 컨테이너 생성
+```sh
+$ docker pull nvcr.io/nvidia/pytorch:21.11-py3
+
+$ cd QA_model
+# Base
+$ docker run --gpus all -it --name cudaenv -v `pwd`:/workspace/app nvcr.io/nvidia/pytorch:21.11-py3
+
+# Recommendation for pytorch
+$ docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -it --rm -v `pwd`:/workspace/app nvcr.io/nvidia/pytorch:21.11-py3
+```
+### Run
+```sh
+# If container is stopped
+$ docker start cudaenv
+$ docker attach cudaenv
+```
+
+
+
+# API server
+[API document](api/README.md)
+
+## Build
 ```
 $ docker-compose up -d --build rabbitmq api app
 ```
-### Run web
-```
-$ API_URI=xxxx docker-compose up -d --build web
-```
-### Run worker (cuda environment)
-```
-/worker $ python3 -m pip install -r ./requirements.txt
-/worker $ FILE_SERVER=http://{API_HOST}:8080 \
-  RABBITMQ_HOST={RABBIT_MQ_HOST} \
-  QUEUE_NAME=IMAGE-PROCESS \
-  RESULT_SUFFIX=_result \
-  ACCESS_TOKEN=TOKEN_FOR_DIRECT_UPLOAD \
-  DOWNLOAD_PATH=./files \
-  python3 main.py
-```
-
-### API server
-[API document](api/README.md)
-
-# twenty-questions
-
-# pt to onnx
+# Model
+## Train
 ```sh
-python QA_model/convert_graph_to_onnx.py --pipeline question-answering --framework pt --model ./QA_model/model/checkpoint-28500  --quantize ./QA_model/model/onnx/KLRL-QA.onnx
+python train.py 
+```
+## Convert Pytorch to ONNX(cuda env)
+```sh
+$ cd app
+$ python convert_graph_to_onnx.py --pipeline question-answering --framework pt --model ./model/checkpoint-28500  --quantize ./model/onnx/KLRL-QA.onnx
 ```
 
-# 훈련
-python train.py 
+## Convert ONNX to TensorRT(cuda env)
+```sh
+$ chmod +x trtexec_build.sh
+$ ./trtexec_build.sh
+```
+## Inference
+```sh
+$ cd QA_model
+$ python inference.py --output_dir ./outputs/test_dataset/ --dataset_name ./model/text_dict.json --model_name_or_path ./model/checkpoint-28500 --do_predict
+```
 
-# inference
-TBD...
+
 
 # pt file link
 [구글 드라이브](https://drive.google.com/drive/folders/1zXe4xHqX7kxOZIVjb73NW0rCZ3G7uUAX?usp=sharing)

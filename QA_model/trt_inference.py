@@ -4,6 +4,10 @@ Open-Domain Question Answering 을 수행하는 inference 코드 입니다.
 대부분의 로직은 train.py 와 비슷하나 retrieval, predict 부분이 추가되어 있습니다.
 """
 
+import tensorrt as trt
+import pycuda.driver as cuda
+import pycuda.autoinit
+import torch
 
 import logging
 import sys
@@ -30,47 +34,48 @@ from transformers import (
     set_seed,
 )
 
-from QA_model.utils_qa import postprocess_qa_predictions_inf, check_no_error
-from QA_model.trainer_qa import QuestionAnsweringTrainer
+from utils_qa import postprocess_qa_predictions_inf, check_no_error
+from trainer_qa import QuestionAnsweringTrainer
 
-from QA_model.arguments import (
+from arguments import (
     ModelArguments,
     DataTrainingArguments,
 )
 
-from QA_model.random_context import get_random_context
+from random_context import get_random_context
 from dataclasses import asdict, dataclass, field, replace
 from typing import Any, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 import pickle
 import os
+import onnxruntime
+
 class QAInference:
     def __init__(self,
         output_dir = './outputs/',
-        dataset_name = './QA_model/model/text_dict.json',
-        model_name_or_path = './QA_model/model/checkpoint-28500',
+        dataset_name = './model/text_dict.json',
+        model_name_or_path = './model/checkpoint-28500',
         args_path = './args'
         ) -> None:
         self.dataset_name = dataset_name
         self.args_path = args_path
 
-        # parser = HfArgumentParser(
-        #     (ModelArguments, DataTrainingArguments, TrainingArguments)
-        # )
+        parser = HfArgumentParser(
+            (ModelArguments, DataTrainingArguments, TrainingArguments)
+        )
  
-        # self.model_args, self.data_args, self.training_args = parser.parse_args_into_dataclasses()
+        self.model_args, self.data_args, self.training_args = parser.parse_args_into_dataclasses()
 
-        self.load_args()
-        self.training_args.output_dir = output_dir
-        self.data_args.dataset_name = dataset_name
-        self.training_args.model_name_or_path = model_name_or_path
+        # self.load_args()
+        # self.training_args.output_dir = output_dir
+        # self.data_args.dataset_name = dataset_name
+        # self.training_args.model_name_or_path = model_name_or_path
 
         self.training_args.do_predict = True
 
         print(f"model is from {self.model_args.model_name_or_path}")
         
-
         # logging 설정
         logging.basicConfig(
             format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
@@ -256,6 +261,56 @@ class QAInference:
 
         logger.info("*** Evaluate ***")
 
+        
+        data = [
+            eval_dataset['attention_mask'], 
+            eval_dataset['example_id'], 
+            eval_dataset['input_ids'], 
+            eval_dataset['offset_mapping']
+        ]
+
+        eval_dataset['attention_mask']
+        eval_dataset['example_id']
+        eval_dataset['input_ids']
+        eval_dataset['offset_mapping']
+
+        # need to set input and output precisions to FP16 to fully enable it
+        # BATCH_SIZE = 12
+        output = np.empty([100, 100], dtype = np.float16) 
+
+        # allocate device memory
+        d_input = cuda.mem_alloc(1 * sum([i.numpy().nbytes for i in data]))
+        d_output = cuda.mem_alloc(1 * output.nbytes)
+
+        bindings = [int(d_input), int(d_output)]
+
+        stream = cuda.Stream()
+
+        def predict(batch): # result gets copied into output
+            # transfer input data to device
+            cuda.memcpy_htod_async(d_input, batch, stream)
+            # execute model
+            context.execute_async_v2(bindings, stream.handle, None)
+            # transfer predictions back
+            cuda.memcpy_dtoh_async(output, d_output, stream)
+            # syncronize threads
+            stream.synchronize()
+            
+            return output
+
+        print("Warming up...")
+
+        pred = predict(preprocessed_images)
+
+        print("Done warming up!")
+
+        pred = predict(preprocessed_images)
+
+        indices = (-pred[0]).argsort()[:5]
+        print("Class | Probability (out of 1)")
+        list(zip(indices, pred[0][indices]))
+
+        
         predictions = trainer.predict(
             test_dataset=eval_dataset, test_examples=datasets["validation"]
         )
@@ -268,18 +323,21 @@ class QAInference:
 
 
 if __name__ == "__main__":
-    # context, _ = get_random_context('./QA_model/model/text_dict.json')
-    # # context=''
-    # # with open('/opt/ml/data/football.txt', 'r', encoding='utf-8') as f:
-    # #     lines = f.readlines()
-    # #     for line in lines:
-    # #         line = line.strip()
-    # #         context=line
-    # question = '이것의 이름은 무엇입니까?'
-    # print(f'question={question}, context={context}')
+    f = open("resnet_engine_pytorch.trt", "rb")
+    runtime = trt.Runtime(trt.Logger(trt.Logger.WARNING)) 
+
+    engine = runtime.deserialize_cuda_engine(f.read())
+    context = engine.create_execution_context()
+    print('Load image')
+
+    f.close()
     inf = QAInference()
 
     inf.set_context()
-    inf.set_question('이것의 이름은 무엇입니까?')
-    inf.set_dataset()
-    print(inf.run_mrc())
+    for _ in range(5):
+        print('Input Question')
+        inf.set_question(input().strip())
+        inf.set_dataset()
+        print(inf.run_mrc())
+
+

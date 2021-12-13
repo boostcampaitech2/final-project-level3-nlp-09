@@ -50,8 +50,8 @@ import onnxruntime
 class QAInference:
     def __init__(self,
         output_dir = './outputs/',
-        dataset_name = './QA_model/model/text_dict.json',
-        model_name_or_path = './QA_model/model/checkpoint-28500',
+        dataset_name = './model/text_dict.json',
+        model_name_or_path = './model/checkpoint-28500',
         args_path = './args'
         ) -> None:
         self.dataset_name = dataset_name
@@ -257,17 +257,28 @@ class QAInference:
 
         logger.info("*** Evaluate ***")
 
-        onnx_model_path = '/opt/ml/final-project-level3-nlp-09/QA_model/model/onnx/KLRL-QA-optimized-quantized.onnx'
+        onnx_model_path = './model/onnx/KLRL-QA.onnx' # 32bit -> 8bit
         print(onnxruntime)
         providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
         session = onnxruntime.InferenceSession(onnx_model_path, providers=providers)
         # session.run(None, ort_inputs)
         # ort_inputs = {session.get_inputs()[0].name: input_ids.detach().cpu().numpy(), session.get_inputs()[1].name: input_mask.detach().cpu().numpy()}
+        
+        data = [eval_dataset['attention_mask'], eval_dataset['example_id'], 
+        eval_dataset['input_ids'], 
+        eval_dataset['offset_mapping']]
+        print([type(i) for i in data])
+        print(data)
+
+        eval_dataset['attention_mask']
+        eval_dataset['attention_mask']
+        eval_dataset['attention_mask']
         ort_outs = session.run(["output"], eval_dataset)
         print('========')
         print(ort_outs)
         print('========')
 
+        
         predictions = trainer.predict(
             test_dataset=eval_dataset, test_examples=datasets["validation"]
         )
@@ -280,7 +291,7 @@ class QAInference:
 
 
 if __name__ == "__main__":
-    onnx_model_path = '/opt/ml/final-project-level3-nlp-09/QA_model/model/onnx/KLRL-QA-optimized-quantized.onnx'
+    onnx_model_path = './model/onnx/KLRL-QA.onnx'
     print(onnxruntime)
     providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
     session = onnxruntime.InferenceSession(onnx_model_path, providers=providers)
