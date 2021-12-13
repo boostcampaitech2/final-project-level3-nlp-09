@@ -1,6 +1,11 @@
 version: '3'
 
 services:
+  onnx:
+    build:
+      context: ./QA_model
+      dockerfile: ./Dockerfile
+    restart: unless-stopped
   rabbitmq:
     image: rabbitmq:3-management-alpine
     ports:

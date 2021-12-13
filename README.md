@@ -40,7 +40,7 @@ $ API_URI=xxxx docker-compose up -d --build web
 
 # pt to onnx
 ```sh
-python QA_model/convert_graph_to_onnx.py --pipeline question-answering --framework pt --model ./QA_model/model/checkpoint-28500  --quantize ./onnx/KLRL-QA.onnx
+python QA_model/convert_graph_to_onnx.py --pipeline question-answering --framework pt --model ./QA_model/model/checkpoint-28500  --quantize ./QA_model/model/onnx/KLRL-QA.onnx
 ```
 
 # 훈련
