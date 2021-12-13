@@ -7,4 +7,6 @@ aiofile==1.5.2
 aiofiles==0.7.0
 pika==1.2.0
 torch==1.6.0
-transformers==4.12.2
+transformers==4.12.5
+pandas
+datasets

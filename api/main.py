@@ -11,6 +11,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from aiofile import AIOFile, Writer, Reader
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM 
+from QA_model.inference import QAInference
+
+inf = QAInference()
+inf.set_context()
 
 # upload_directory = os.environ['UPLOAD_PATH']
 # access_token = os.environ['ACCESS_TOKEN']
@@ -53,31 +57,15 @@ app.add_middleware(
     allow_headers=['*']
 )
 
-from transformers import PreTrainedTokenizerFast
-tokenizer = PreTrainedTokenizerFast.from_pretrained("skt/kogpt2-base-v2",
-  bos_token='</s>', eos_token='</s>', unk_token='<unk>',
-  pad_token='<pad>', mask_token='<mask>') 
-import torch
-from transformers import GPT2LMHeadModel
-
-model = GPT2LMHeadModel.from_pretrained('skt/kogpt2-base-v2')
-
 
 # Get inference result
 @app.post("/chat")
 async def get_inferenec(item: Request):
     item_dict = await item.json()
     text = item_dict['data']
-    input_ids = tokenizer.encode(text)
-    gen_ids = model.generate(torch.tensor([input_ids]),
-                            max_length=128,
-                            repetition_penalty=2.0,
-                            pad_token_id=tokenizer.pad_token_id,
-                            eos_token_id=tokenizer.eos_token_id,
-                            bos_token_id=tokenizer.bos_token_id,
-                            use_cache=True)
-    generated = tokenizer.decode(gen_ids[0,:].tolist())
-    # print(generated)
+    inf.set_question(text)
+    inf.set_dataset()
+    generated = inf.run_mrc()
 
     return {'result': generated}
 

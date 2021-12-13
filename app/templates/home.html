@@ -2,11 +2,6 @@
 <html>
 <title>Candice</title>
 <head>
-<link
-rel="shortcut icon"
-type="image/x-icon"
-href="https://user-images.githubusercontent.com/20112458/49326597-773b7280-f57a-11e8-853d-20ed61d18b0d.png"
-/>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
 <style>
@@ -90,14 +85,13 @@ href="https://user-images.githubusercontent.com/20112458/49326597-773b7280-f57a-
 </head>
 
 <body>
-<img />
 <center>
 <h1>
 <img
 src=""
-alt="CANDICE"
+alt="Twenty-Questions"
 style="width:50px;height:50px;"
-/>Q100 ChatBot
+/>Q100 QBot
 </h1>
 </center>
 <div class="box"></div>
@@ -106,15 +100,20 @@ style="width:50px;height:50px;"
 <div id="chatbox">
 <img
 src=""
-alt="CANDICE"
+alt="Q100"
 style="width:50px;height:50px;"
 />
 <p class="botText">
-<span>Hello there! I am Q100's ChatBot</span>
+<span>ㅎㅇ! 나는 Q100의 QBot이야.<br></span>
+<span>문제 테마를 골라!!<br></span>
+<span>1.영화 2.연예인<br></span>
+<span>3.운동 4.과일<br></span>
+<span>5.음식 6.만화주인공<br></span>
 </p>
 </div>
 <div id="userInput">
 <input id="textInput" type="text" name="msg" placeholder="Message" />
+<input id="themeButton" type="button" value="Theme" name='thBut' placeholder="Button" />
 </div>
 </div>
 <script>
@@ -126,6 +125,12 @@ style="width:50px;height:50px;"
           document
             .getElementById("userInput")
             .scrollIntoView({ block: "start", behavior: "smooth" });
+          if (rawText >= 1 && rawText <= 6) {
+            console.log(rawText);
+            var botHtml = '<p class="botText"><span>' + rawText + "번 테마를 골랐습니다." + "</span></p>";
+            $("#chatbox").append(botHtml);
+            return ;
+          }
           $.get("/get", { msg: rawText }).done(function(data) {
             var botHtml = '<p class="botText"><span>' + data + "</span></p>";
             $("#chatbox").append(botHtml);
@@ -134,10 +139,29 @@ style="width:50px;height:50px;"
               .scrollIntoView({ block: "start", behavior: "smooth" });
           });
         }
+        function getTheme() {
+          var rawText = $("#textInput").val();
+          var userHtml = '<p class="userText"><span>' + rawText + "</span></p>";
+          $("#textInput").val("");
+          $("#chatbox").append(userHtml);
+          if (rawText >= 1 && rawText <= 6) {
+            console.log(rawText);
+            var botHtml = '<p class="botText"><span>' + rawText + "번 테마를 골랐습니다." + "</span></p>";
+            $("#chatbox").append(botHtml);
+          }
+          else {
+            console.log("wrong input");
+            var botHtml = '<p class="botText"><span>' + "올바른 값을 입력해주세요!!!" + "</span></p>";
+            $("#chatbox").append(botHtml);
+          }
+        }
         $("#textInput").keypress(function(e) {
-          if (e.which == 13) {
+          if (e.keyCode == '13') {
             getBotResponse();
           }
+        });
+        $("#themeButton").click(function() {
+          getTheme();
         });
       </script>
 </div>

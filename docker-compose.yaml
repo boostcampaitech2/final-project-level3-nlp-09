@@ -1,6 +1,17 @@
 version: '3'
 
 services:
+  onnx:
+    build:
+      context: ./QA_model
+      dockerfile: ./Dockerfile
+    stdin_open: true # docker run -i
+    tty: true # docker run -t
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
   rabbitmq:
     image: rabbitmq:3-management-alpine
     ports:
