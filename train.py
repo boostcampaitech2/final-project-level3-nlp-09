@@ -91,25 +91,25 @@ def train(train_loader, val_loader, model, criterion, optimizer, scheduler, args
         pbar= tqdm(enumerate(train_loader), total= len(train_loader))
 
         model.train()
-        # for idx, data in pbar:
-        #     labels= data['labels'].to(device)
-        #     optimizer.zero_grad()
+        for idx, data in pbar:
+            labels= data['labels'].to(device)
+            optimizer.zero_grad()
 
-        #     outputs= model(
-        #         input_ids= data['input_ids'].to(device),
-        #         attention_mask= data['attention_mask'].to(device)
-        #     )
+            outputs= model(
+                input_ids= data['input_ids'].to(device),
+                attention_mask= data['attention_mask'].to(device)
+            )
             
-        #     loss= criterion(outputs, labels)
-        #     logits= outputs.detach().cpu()
+            loss= criterion(outputs, labels)
+            logits= outputs.detach().cpu()
 
-        #     acc= compute_metrics(logits, labels)
-        #     train_loss+= loss.item() / len(data['input_ids'])
-        #     train_acc+= acc['accuracy']
+            acc= compute_metrics(logits, labels)
+            train_loss+= loss.item() / len(data['input_ids'])
+            train_acc+= acc['accuracy']
 
-        #     loss.backward()
-        #     optimizer.step()
-        #     scheduler.step()
+            loss.backward()
+            optimizer.step()
+            scheduler.step()
 
         model.eval()
         with torch.no_grad():
