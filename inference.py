@@ -69,7 +69,7 @@ def inference(data, model, tokenizer):
                 input_ids= tokenized_data['input_ids'][j].unsqueeze(0).to(device),
                 attention_mask= tokenized_data['attention_mask'][j].unsqueeze(0).to(device)
             )
-            logits= outputs['logits']
+            logits= outputs
             logits= F.softmax(logits, dim= -1)
             logits= logits.detach().cpu().numpy()
             prob= logits
