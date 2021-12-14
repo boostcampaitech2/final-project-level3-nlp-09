@@ -2,6 +2,7 @@
 final-project-level3-nlp-09 created by GitHub Classroom  
 * This is feat/front branch  
     * cd front  
+    * boot 디렉안에 1안 index.html, 2안 test1, 3안 test2
     * python myapp.py  
 
 ### Run servers

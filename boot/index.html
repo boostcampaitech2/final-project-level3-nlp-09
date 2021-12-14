@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<title>Q100</title>
+<head>
+<link rel="stylesheet" href="css/bootstrap.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.js"></script>
+
+<style>
+      body {
+        font-family: monospace;
+      }
+      h1 {
+        background-color: #FFC9BE;
+        display: inline-block;
+        font-size: 3em;
+        margin: 0;
+        padding: 14px;
+      }
+      h3 {
+        color: black;
+        font-size: 20px;
+        margin-top: 3px;
+        text-align: center;
+      }
+      #chatbox {
+        margin-left: auto;
+        margin-right: auto;
+        width: 40%;
+        margin-top: 60px;
+      }
+      #userInput {
+        margin-left: auto;
+        margin-right: auto;
+        width: 40%;
+        margin-top: 60px;
+      }
+      #textInput {
+        width: 90%;
+        border: none;
+        border-bottom: 3px solid black;
+        font-family: monospace;
+        font-size: 17px;
+      }
+      .userText {
+        color: black;
+        font-family: monospace;
+        font-size: 17px;
+        text-align: right;
+        line-height: 30px;
+      }
+      .userText span {
+        background-color: #FDFF60;
+        padding: 10px;
+        border-radius: 2px;
+      }
+      .botText {
+        color: black;
+        font-family: monospace;
+        font-size: 17px;
+        text-align: left;
+        line-height: 30px;
+      }
+      .botText span {
+        background-color: #BEE3FF;
+        padding: 10px;
+        border-radius: 2px;
+      }
+      #tidbit {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 300px;
+      }
+      .boxed {
+        margin-left: auto;
+        margin-right: auto;
+        width: 78%;
+        margin-top: 60px;
+        border: 1px solid green;
+      }
+      .box {
+        border: 2px solid black;
+      }
+    </style>
+
+</head>
+
+<body>
+<center>
+<h1>
+<img
+src=""
+alt="Twenty-Questions"
+style="width:50px;height:50px;"
+/>Q100 QBot
+</h1>
+</center>
+<div class="box"></div>
+<div class="boxed">
+<div>
+<div id="chatbox">
+<img
+src=""
+alt="Q100"
+style="width:50px;height:50px;"
+/>
+<p class="botText">
+<span>ㅎㅇ! 나는 Q100의 QBot이야.<br></span>
+<span>문제 테마를 골라!!<br></span>
+<span>1.영화 2.연예인<br></span>
+<span>3.운동 4.과일<br></span>
+<span>5.음식 6.만화주인공<br></span>
+</p>
+</div>
+<div id="userInput">
+<input id="textInput" type="text" name="msg" placeholder="Message" />
+<button type="button" class="btn btn-outline-success btn-lg" id=hintButton>힌트</button>
+</div>
+</div>
+<script>
+        function getBotResponse() {
+          var rawText = $("#textInput").val();
+          var userHtml = '<p class="userText"><span>' + rawText + "</span></p>";
+          $("#textInput").val("");
+          $("#chatbox").append(userHtml);
+          document
+            .getElementById("userInput")
+            .scrollIntoView({ block: "start", behavior: "smooth" });
+          if (rawText >= 1 && rawText <= 6) {
+            console.log(rawText);
+            var botHtml = '<p class="botText"><span>' + rawText + "번 테마를 골랐습니다." + "</span></p>";
+            $("#chatbox").append(botHtml);
+            return ;
+          }
+          $.get("/get", { msg: rawText }).done(function(data) {
+            var botHtml = '<p class="botText"><span>' + data + "</span></p>";
+            $("#chatbox").append(botHtml);
+            document
+              .getElementById("userInput")
+              .scrollIntoView({ block: "start", behavior: "smooth" });
+          });
+        }
+        function getTheme() {
+          var rawText = $("#textInput").val();
+          var userHtml = '<p class="userText"><span>' + rawText + "</span></p>";
+          $("#textInput").val("");
+          $("#chatbox").append(userHtml);
+          if (rawText >= 1 && rawText <= 6) {
+            console.log(rawText);
+            var botHtml = '<p class="botText"><span>' + rawText + "번 테마를 골랐습니다." + "</span></p>";
+            $("#chatbox").append(botHtml);
+          }
+          else {
+            console.log("wrong input");
+            var botHtml = '<p class="botText"><span>' + "올바른 값을 입력해주세요!!!" + "</span></p>";
+            $("#chatbox").append(botHtml);
+          }
+        }
+        $("#textInput").keypress(function(e) {
+          if (e.keyCode == '13') {
+            getBotResponse();
+          }
+        });
+        $("#hintButton").click(function() {
+          getTheme();
+        });
+      </script>
+</div>
+</body>
+</html>
