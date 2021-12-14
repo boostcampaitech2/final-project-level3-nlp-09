@@ -30,14 +30,6 @@ from model import YesOrNoModel
 
 warnings.filterwarnings("ignore")
 
-"""
-    뭔가 코드적으로 모듈을 나눈다고 가정을 하면..
-    model.py : 이건 뭐 간단하니까..
-    dataset.py : get dataset으로 만들면 될 듯..?
-    train.py
-    inference.py
-"""
-
 def get_config():
     parser = argparse.ArgumentParser()
 
