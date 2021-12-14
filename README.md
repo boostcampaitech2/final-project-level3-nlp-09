@@ -1,28 +1,35 @@
-# final-project-level3-nlp-09  
-final-project-level3-nlp-09 created by GitHub Classroom  
-* This is feat/front branch  
-    * cd front  
-    * python myapp.py  
+## CODE GUIDE
 
-### Run servers
-```
-$ docker-compose up -d --build rabbitmq api app
-```
-### Run web
-```
-$ API_URI=xxxx docker-compose up -d --build web
-```
-### Run worker (cuda environment)
-```
-/worker $ python3 -m pip install -r ./requirements.txt
-/worker $ FILE_SERVER=http://{API_HOST}:8080 \
-  RABBITMQ_HOST={RABBIT_MQ_HOST} \
-  QUEUE_NAME=IMAGE-PROCESS \
-  RESULT_SUFFIX=_result \
-  ACCESS_TOKEN=TOKEN_FOR_DIRECT_UPLOAD \
-  DOWNLOAD_PATH=./files \
-  python3 main.py
+data를 번역하고 싶다면.. (pororo)
+
+```python
+python translation.py
 ```
 
-### API server
-[API document](api/README.md)
+
+
+no answer data를 생성하고 싶다면.. `augmentation.ipynb` 실행
+
+
+
+모델을 학습시키고 싶다면.. `train.py`의 argument를 확인하고 실행
+
+```python
+python train.py
+```
+
+
+
+inference를 하고 싶다면.. `inference.py` 의 argument를 확인하고 실행
+(이 때 사용하고 싶은 모델을 save_model 폴더에서 찾아 argument로 입력해줘야함.)
+
+```python
+python inference.py
+```
+
+
+
+
+
+ 
+
