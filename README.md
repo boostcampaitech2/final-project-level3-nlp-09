@@ -9,14 +9,14 @@ README.md의 모든 항목들 중 (cuda env)가 붙은 항목들은 해당 환�
 ### Container setting
 - Base or Recommendation 선택해 컨테이너 생성
 ```sh
-$ docker pull nvcr.io/nvidia/pytorch:21.11-py3
+$ docker pull nvcr.io/nvidia/tensorrt:21.11-py3
 
 $ cd QA_model
 # Base
-$ docker run --gpus all -it --name cudaenv -v `pwd`:/workspace/app nvcr.io/nvidia/pytorch:21.11-py3
+$ docker run --gpus all -it --name cudaenv -v `pwd`:/workspace/app nvcr.io/nvidia/tensorrt:21.11-py3
 
 # Recommendation for pytorch
-$ docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -it --rm -v `pwd`:/workspace/app nvcr.io/nvidia/pytorch:21.11-py3
+$ docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -it --rm -v `pwd`:/workspace/app nvcr.io/nvidia/tensorrt:21.11-py3
 ```
 
 ### Run
