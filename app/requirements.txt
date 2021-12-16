@@ -1,7 +1,0 @@
-flask
-flask[async]
-aiofile==1.5.2
-aiofiles==0.7.0
-pika==1.2.0
-requests
-aiohttp
