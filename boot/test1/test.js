@@ -13,28 +13,34 @@ function getBotResponse() {
       var userHtml = '<div class="media media-chat media-chat-reverse"><img class="avatar" src="https://img.icons8.com/color/36/000000/administrator-male.png" alt="..."><div class="media-body"><p class="userText"><span>' + rawText + "</span></p></div></div>";
       $("#chat-content").append(userHtml);
       trial+=1;
-      var t_element = document.getElementById("trialCount");
-      t_element.innerText=trial;
+      calculateTrial();
       console.log(trial);
     }
   }
 function getHintResponse(trial) {
-    if(trial>5){
+    if(trial>=5){
       document.getElementById("hintButton").disabled = false;
     }
     else{
       document.getElementById("hintButton").disabled = true;
     }
   }
+function calculateTrial() {
+  var t_element = document.getElementById("trialCount");
+  t_element.innerText=trial;
+}
   $("#textInput").keypress(function(e) {
     if (e.keyCode == '13') {
       getBotResponse();
       getHintResponse(trial)
+      calculateTrial();
     }
   });
   $("#hintButton").click(function() {
     getHintResponse(trial)
     console.log("Hint");
     console.log(trial);
-    trial += 1;
+    trial=0;
+    calculateTrial();
+    getHintResponse(trial)
   });
