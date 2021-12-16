@@ -142,7 +142,8 @@ __pycache__/
 models/
 outputs/
 wandb/
-**/model/
+**/model/onnx/
+**/model/onnx_cuda/
 *.pt
 *.pth
 *.onnx
