@@ -1,1 +1,1 @@
-python trt_inference.py -e ./export/best.trt -p "내 이름은 스폰지밥입니다. 안녕하세요." -q "이것의 이름은?"
+python trt_inference.py --output_dir ./output -e ./export/best.trt #-p "내 이름은 스폰지밥입니다. 안녕하세요." -q "이것의 이름은?"

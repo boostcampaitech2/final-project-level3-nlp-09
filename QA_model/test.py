@@ -1,8 +1,7 @@
 import tensorrt as trt
 import pycuda.driver as cuda
 import numpy as np
-
-tensorrt_file_name = 'export/fp16.trt'
+tensorrt_file_name = './export/best.trt'
 TRT_LOGGER = trt.Logger(trt.Logger.WARNING)
 trt_runtime = trt.Runtime(TRT_LOGGER)
  
@@ -24,7 +23,7 @@ class HostDeviceMem(object):
  
 inputs, outputs, bindings, stream = [], [], [], []
 for binding in engine:
-    size = trt.Volume(engine.get_binding_shape(binding)) * engine.max_batch_size
+    size = trt.volume(engine.get_binding_shape(binding)) * engine.max_batch_size
     dtype = trt.nptype(engine.get_binding_dtype(binding))
     host_mem = cuda.pagelocked_empty*(size, dtype)
     device_mem = cuda.mem_alloc(host_mem.nbytes)

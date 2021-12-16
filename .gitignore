@@ -147,3 +147,4 @@ wandb/
 *.pth
 *.onnx
 **/export/
+**/checkpoint-28500/
