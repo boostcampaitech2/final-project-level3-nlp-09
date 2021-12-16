@@ -1,4 +1,5 @@
 var trial = 0;
+var correctNum = 0;
 function getBotResponse() {
     var rawText = $("#textInput").val();
     console.log(rawText);
@@ -27,13 +28,18 @@ function getHintResponse(trial) {
   }
 function calculateTrial() {
   var t_element = document.getElementById("trialCount");
-  t_element.innerText=trial;
+  t_element.innerText="전체 질문 횟수 :" + trial;
+}
+function calculateCorrect() {
+  var t_element = document.getElementById("correctCount");
+  t_element.innerText="맞힌 갯수 :" + correctNum;
 }
   $("#textInput").keypress(function(e) {
     if (e.keyCode == '13') {
       getBotResponse();
       getHintResponse(trial)
       calculateTrial();
+      calculateCorrect();
     }
   });
   $("#hintButton").click(function() {
