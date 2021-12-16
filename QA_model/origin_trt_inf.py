@@ -15,7 +15,7 @@ import time
 import numpy as np
 
 from tqdm import tqdm
-from transformers import set_seed, AutoTokenizer
+from transformers import (set_seed,)
 from random_context import get_random_context
 from datasets import (
     Sequence,
@@ -32,15 +32,11 @@ class QAInference:
         self.args = args
 
         # roberta
-        self.max_seq_length = 512
+        self.max_seq_length = 384
         self.doc_stride = 128
-        self.max_query_length = 100
+        self.max_query_length = 64
         self.vocab_file = "./model/fine-tuned/vocab.txt"
-        # self.tokenizer = tokenization.FullTokenizer(vocab_file=self.vocab_file, do_lower_case=True)
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            'klue/roberta-large',
-            use_fast=True,
-        )
+        self.tokenizer = tokenization.FullTokenizer(vocab_file=self.vocab_file, do_lower_case=True)
 
         # 난수를 고정합니다.
         set_seed(args.seed)
@@ -55,29 +51,20 @@ class QAInference:
         networkOutputs = []
 
         eval_time_elapsed = 0
-        print(f'features type: {type(features)}')
-        print(f'features len: {len(features)}')
-        print(f'features.keys: {features.keys()}')
-        print(f'features.input_ids lens: {len(features["input_ids"])}')
-        print(f'features.input_ids 0: {len(features["input_ids"][0])}')
-        # print(f'features: {features}')
-        for feature_index in range(len(features['input_ids'])):
-            # print(f'feature_index: {feature_index}')
-            print(f'feature input_ids{feature_index} {features["input_ids"][feature_index]}')
-            
+        for feature_index, feature in enumerate(features):
             # Copy inputs
-            input_ids_batch = np.repeat(np.expand_dims(np.array(features['input_ids'][feature_index], dtype=np.float32), 0), 1, axis=0)
-            attention_mask_batch = np.repeat(np.expand_dims(np.array(features['attention_mask'][feature_index], dtype=np.float32), 0), 1, axis=0)
-            # segment_ids_batch = np.repeat(np.expand_dims(feature.segment_ids, 0), 1, axis=0)
+            print('feature.input_ids', feature.input_ids)
+            input_ids_batch = np.repeat(np.expand_dims(feature.input_ids, 0), 1, axis=0)
+            segment_ids_batch = np.repeat(np.expand_dims(feature.segment_ids, 0), 1, axis=0)
             # input_mask_batch = np.repeat(np.expand_dims(feature.input_mask, 0), 1, axis=0)
 
             input_ids = cuda.register_host_memory(np.ascontiguousarray(input_ids_batch.ravel()))
-            attention_mask = cuda.register_host_memory(np.ascontiguousarray(attention_mask_batch.ravel()))
+            segment_ids = cuda.register_host_memory(np.ascontiguousarray(segment_ids_batch.ravel()))
             # input_mask = cuda.register_host_memory(np.ascontiguousarray(input_mask_batch.ravel()))
 
             eval_start_time = time.time()
             cuda.memcpy_htod_async(d_inputs[0], input_ids, self.stream)
-            cuda.memcpy_htod_async(d_inputs[1], attention_mask, self.stream)
+            cuda.memcpy_htod_async(d_inputs[1], segment_ids, self.stream)
             # cuda.memcpy_htod_async(d_inputs[2], input_mask, self.stream)
 
             # Run inference
@@ -91,13 +78,13 @@ class QAInference:
             self.stream.synchronize()
 
             for index, batch in enumerate(h_output):
-                print(h_output)
+                # print(h_output)
                 # Data Post-processing
                 networkOutputs.append(_NetworkOutput(
                     start_logits = np.array(batch.squeeze()[:, 0]),
                     end_logits = np.array(batch.squeeze()[:, 1]),
                     feature_index = feature_index
-                ))
+                    ))
 
         eval_time_elapsed /= len(features)
 
@@ -125,31 +112,26 @@ class QAInference:
 
         # We always use batch size 1.
         input_shape = (1, self.max_seq_length)  # (1,384)
-        # input_nbytes = trt.volume(input_shape) * 2  # 384*2
         input_nbytes = trt.volume(input_shape) * trt.int32.itemsize  # 384*4
-        print(f'input_nbytes: {input_nbytes}')
+        
         # Allocate device memory for inputs.
-        bind_num = 2
-        self.d_inputs = [cuda.mem_alloc(input_nbytes) for binding in range(bind_num)]
-        print(f'd_input: {self.d_inputs}')
+        self.d_inputs = [cuda.mem_alloc(input_nbytes) for binding in range(2)]
 
         # Specify input shapes. These must be within the min/max bounds of the active profile (0th profile in this case)
         # Note that input shapes can be specified on a per-inference basis, but in this case, we only have a single shape.
-        for binding in range(bind_num):
+        for binding in range(2):
             self.engine_context.set_binding_shape(binding, input_shape)
         assert self.engine_context.all_binding_shapes_specified
 
         # Allocate output buffer by querying the size from the context. This may be different for different input shapes.
-        print(f'binding_shape(output_dim): {tuple(self.engine_context.get_binding_shape(bind_num))}')
-        self.h_output = cuda.pagelocked_empty(tuple(self.engine_context.get_binding_shape(bind_num)), dtype=np.float32)
-        # print(f'self.h_output: {self.h_output}')
-        print(f'self.h_output.nbytes: {self.h_output.nbytes}')
+        self.h_output = cuda.pagelocked_empty(tuple(self.engine_context.get_binding_shape(2)), dtype=np.float32)
+        print(self.h_output)
         self.d_output = cuda.mem_alloc(self.h_output.nbytes)
-        print(f'self.d_output: {self.d_output}')
 
         # Create a stream in which to copy inputs/outputs and run inference.
         self.stream = cuda.Stream()
-        
+
+
 
     # 문서를 랜덤으로 가져옵니다.
     def set_context(self):
@@ -167,12 +149,6 @@ class QAInference:
 
         d = {"context": [self.context], "question": [self.question], "id": ["mrc-1"]}
         df = pd.DataFrame(data=d)
-
-        for col in df.columns:
-            if df[col].dtype==object:
-                df[col] = df[col].apply(lambda x: np.nan if x==np.nan else str(x).encode('utf-8', 'replace').decode('utf-8'))
-
-
         f = Features(
             {
                 "context": Sequence(feature=Value(dtype="string", id=None)),
@@ -195,38 +171,12 @@ class QAInference:
         N_RUN = self.args.n_runs
         inference_time_arr = [] 
         for _ in tqdm(range(N_RUN)):
-            pad_on_right = self.tokenizer.padding_side == "right"
-
-            token = self.tokenizer(
-                self.question,
-                self.context,
-                truncation="only_second" if pad_on_right else "only_first",
-                max_length=self.max_seq_length,
-                stride=self.doc_stride,
-                return_overflowing_tokens=True,
-                return_offsets_mapping=True,
-                return_token_type_ids=False,  # roberta모델을 사용할 경우 False, bert를 사용할 경우 True로 표기해야합니다.
-                padding="max_length"
-            )
-            context_token = self.tokenizer(
-                self.context,
-                truncation=True,
-                max_length=self.max_seq_length,
-                stride=self.doc_stride,
-                return_overflowing_tokens=True,
-                return_offsets_mapping=True,
-                return_token_type_ids=False,  # roberta모델을 사용할 경우 False, bert를 사용할 경우 True로 표기해야합니다.
-                padding="max_length"
-            )
-            # doc_tokens = dp.convert_doc_tokens(self.context)
-            # features = self.question_features(doc_tokens, self.question)
-            # print('feautures ', features)
+            doc_tokens = dp.convert_doc_tokens(self.context)
+            features = self.question_features(doc_tokens, self.question)
             # print(self.engine_context)
             # print(self.d_inputs)
-            # print(token)
-            # print(token.keys())
             
-            eval_time_elapsed, prediction, nbest_json = self.inference_FP16(self.engine_context, self.d_inputs, self.h_output, self.d_output, token, context_token)
+            eval_time_elapsed, prediction, nbest_json = self.inference_FP16(self.engine_context, self.d_inputs, self.h_output, self.d_output, features, doc_tokens)
             inference_time_arr.append(eval_time_elapsed)
 
         self.print_single_query(eval_time_elapsed, prediction, nbest_json)
@@ -253,6 +203,7 @@ if __name__ == "__main__":
     parser.add_argument('--n_runs',type = int, default=1, help = '몇번 실행?')
     args = parser.parse_args()
 
+    # class 객체 생성
     inf = QAInference(args)
 
     inf.load_trt_model()

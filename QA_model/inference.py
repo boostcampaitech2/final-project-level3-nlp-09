@@ -203,6 +203,8 @@ class QAInference:
             remove_columns=column_names,
             load_from_cache_file=not data_args.overwrite_cache,
         )
+        print('eval dataset')
+        print(eval_dataset)
 
         # Data collator
         # flag가 True이면 이미 max length로 padding된 상태입니다.

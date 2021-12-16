@@ -55,7 +55,7 @@ def main(question, context):
 
     print(f"model is from {model_args.model_name_or_path}")
     
-
+    # print
     # logging 설정
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
@@ -95,17 +95,17 @@ def main(question, context):
             "question": Value(dtype="string", id=None),
         }
     )
-    for _ in range(5):
-        question = input().strip()
-        d = {'context' : [context], 'question' : [question], 'id' : ['mrc-1']}
-        df = pd.DataFrame(data=d)
-        
-        
-        if training_args.do_predict:
-            datasets = DatasetDict({'validation' : Dataset.from_pandas(df, features=f)})
-        # eval or predict mrc model
-        if training_args.do_eval or training_args.do_predict:
-            run_mrc(data_args, training_args, model_args, datasets, tokenizer, model)
+    # for _ in range(5):
+    # question = input().strip()
+    d = {'context' : [context], 'question' : [question], 'id' : ['mrc-1']}
+    df = pd.DataFrame(data=d)
+    
+    
+    if training_args.do_predict:
+        datasets = DatasetDict({'validation' : Dataset.from_pandas(df, features=f)})
+    # eval or predict mrc model
+    if training_args.do_eval or training_args.do_predict:
+        run_mrc(data_args, training_args, model_args, datasets, tokenizer, model)
 
 
 def run_mrc(
@@ -180,7 +180,10 @@ def run_mrc(
         remove_columns=column_names,
         load_from_cache_file=not data_args.overwrite_cache,
     )
-
+    print('eval_dataset', eval_dataset)
+    # print(f"input_ids: {eval_dataset['input_ids']}")
+    print(f"input_ids: {type(eval_dataset['input_ids'])}")
+    print(f"input_ids: {len(eval_dataset['input_ids'])}")
     # Data collator
     # flag가 True이면 이미 max length로 padding된 상태입니다.
     # 그렇지 않다면 data collator에서 padding을 진행해야합니다.
