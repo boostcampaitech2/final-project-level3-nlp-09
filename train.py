@@ -3,6 +3,8 @@ import os
 import sys
 import pandas as pd
 import torch
+import random
+import numpy as np
 
 from typing import List, Callable, NoReturn, NewType, Any
 import dataclasses
@@ -61,6 +63,16 @@ def preprocess(text):
     )
     return text
 
+def seed_everything(seed):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = True
+    
+
 
 def main():
     # 가능한 arguments 들은 ./arguments.py 나 transformer package 안의 src/transformers/training_args.py 에서 확인 가능합니다.
@@ -73,7 +85,7 @@ def main():
     # [참고] argument를 manual하게 수정하고 싶은 경우에 아래와 같은 방식을 사용할 수 있습니다
     training_args = TrainingArguments(
         do_train=True,
-        output_dir="./models/"+model_args.model_name_or_path+'5',
+        output_dir="./models/"+model_args.model_name_or_path+'5'+'fix_preprocess',
         overwrite_output_dir=True,
         evaluation_strategy="steps",
         per_device_train_batch_size=16,
@@ -99,6 +111,7 @@ def main():
 
     # 모델을 초기화하기 전에 난수를 고정합니다.
     set_seed(training_args.seed)
+    seed_everything(training_args.seed)
 
     # logging 설정
     logging.basicConfig(
@@ -166,7 +179,7 @@ def main():
         run = wandb.init(
             project="final project",
             entity="quarter100",
-            name='mrc_'+model_args.model_name_or_path+'5',
+            name='mrc_'+model_args.model_name_or_path+'5'+'fix_preprocess',
             group="train"
         )
         run_mrc(data_args, training_args, model_args, datasets, tokenizer, model)
@@ -358,7 +371,7 @@ def run_mrc(
         for i in range(len(examples[context_column_name])):
             if examples[answer_column_name][i]=="No answer":
                 context = examples[context_column_name][i]
-                context = preprocess(context)
+                examples[context_column_name][i] = preprocess(context)
                 continue
             context = examples[context_column_name][i]
             answer_text = examples[answer_column_name][i]

@@ -74,9 +74,3 @@ class DataTrainingArguments:
             "and end predictions are not conditioned on one another."
         },
     )
-    top_k_retrieval: int = field(
-        default=1,
-        metadata={
-            "help": "Define how many top-k passages to retrieve based on similarity."
-        },
-    )

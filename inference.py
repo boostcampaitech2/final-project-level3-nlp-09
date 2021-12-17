@@ -33,39 +33,37 @@ from transformers import (
 from utils_qa import postprocess_qa_predictions_inf, check_no_error
 from trainer_qa import QuestionAnsweringTrainer
 
-from arguments import (
-    ModelArguments,
-    DataTrainingArguments,
-)
 
+class ModelArguments:
+    def __init__(self):
+        self.model_name_or_path = './models/mrc/checkpoint-28500/'
+        self.config_name = None
+        self.tokenizer_name = None
 
-logger = logging.getLogger(__name__)
-
+class DataTrainingArguments:
+    def __init__(self):
+        self.overwrite_cache = False
+        self.preprocessing_num_workers = 4
+        self.max_seq_length = 384,
+        self.pad_to_max_length = False,
+        self.doc_stride = 128,
+        self.max_answer_length = 50
+        
 
 def main(question, context):
     # 가능한 arguments 들은 ./arguments.py 나 transformer package 안의 src/transformers/training_args.py 에서 확인 가능합니다.
     # --help flag 를 실행시켜서 확인할 수 도 있습니다.
 
-    parser = HfArgumentParser(
-        (ModelArguments, DataTrainingArguments, TrainingArguments)
+
+    model_args = ModelArguments()
+    data_args = DataTrainingArguments()
+    training_args = TrainingArguments(
+        output_dir = './outputs/one_question',
+        do_predict = True
     )
-    model_args, data_args, training_args = parser.parse_args_into_dataclasses()
-
-    training_args.do_predict = True
-
+    
     print(f"model is from {model_args.model_name_or_path}")
     
-
-    # logging 설정
-    logging.basicConfig(
-        format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
-        datefmt="%m/%d/%Y %H:%M:%S",
-        handlers=[logging.StreamHandler(sys.stdout)],
-    )
-
-    # verbosity 설정 : Transformers logger의 정보로 사용합니다 (on main process only)
-    logger.info("Training/evaluation parameters %s", training_args)
-
     # 모델을 초기화하기 전에 난수를 고정합니다.
     set_seed(training_args.seed)
     
@@ -198,7 +196,7 @@ def run_mrc(
             examples=examples,
             features=features,
             predictions=predictions,
-            max_answer_length=50,
+            max_answer_length=data_args.max_answer_length,
             output_dir=training_args.output_dir,
         )
         # Metric을 구할 수 있도록 Format을 맞춰줍니다.
@@ -227,7 +225,7 @@ def run_mrc(
         compute_metrics=compute_metrics,
     )
 
-    logger.info("*** Evaluate ***")
+
 
     #### eval dataset & eval example - predictions.json 생성됨
     if training_args.do_predict:
