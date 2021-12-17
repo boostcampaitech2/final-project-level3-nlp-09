@@ -59,7 +59,8 @@ def main(question, context):
     data_args = DataTrainingArguments()
     training_args = TrainingArguments(
         output_dir = './outputs/one_question',
-        do_predict = True
+        do_predict = True,
+        fp16=True
     )
     
     print(f"model is from {model_args.model_name_or_path}")
