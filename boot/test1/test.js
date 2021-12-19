@@ -13,8 +13,9 @@ var dictFlags = {
   feedbackMode: 0,
 };
 var saveLogger = {
+  context: ["test", "test", "test", "test", "test", "test", "test", "test", "test", "test"], //임의의 context
   userQuestions: [], //사용자가 던진 Y/N 질문 저장
-  botAnswers: [0, 1, 0, 1, 0, 1, 0, 1, 1, 1], // Y/N 질문에 대한 로봇의 답 저장
+  botAnswers: [0, 1, 0, 1, 0, 1, 0, 1, 1, 1], // Y/N 질문에 대한 로봇의 답 저장 //임의의 답변
   userFeedbackIdx: [], // 사용자가 답함(0 or 1)
 };
 function getBotResponse() {
@@ -101,7 +102,7 @@ function getUserFeedback() {
   if (i == saveLogger["userQuestions"].length + 1) {
     //종료조건
     //사용자 피드백 파일로 생성
-    //makeExcel();
+    saveCsv();
 
     //종료 문구 띄우기
     var botHtml = `${botImage} 사용자 피드백이 전송되었습니다.<br>참여해주셔서 감사합니다!🤗<br>게임을 종료합니다.`;
@@ -122,6 +123,26 @@ function getUserFeedback() {
     ***********************************`;
     $("#chat-content").append(botMessage);
   }
+}
+
+function saveCsv() {
+  const data = [["context", "question", "answers", "feedback"]];
+  for (var i = 0; i < saveLogger["userQuestions"].length; i++) {
+    data.push([
+      saveLogger["context"][i],
+      saveLogger["userQuestions"][i],
+      saveLogger["botAnswers"][i],
+      saveLogger["userFeedbackIdx"][i + 1], //맨 처음이 공백이 들어간다..
+    ]);
+  }
+
+  let csvContent = "data:text/csv;charset=utf-8," + data.map((e) => e.join(",")).join("\n");
+  var encodedUri = encodeURI(csvContent);
+  var link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "my_data.csv");
+  document.body.appendChild(link);
+  link.click();
 }
 
 function getHintResponse(trial) {
