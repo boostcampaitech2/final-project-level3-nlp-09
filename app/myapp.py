@@ -16,7 +16,7 @@ def home():
 async def get_bot_response():
     userText = request.args.get('msg')
     print(userText)
-    data = {'data':userText}
+    data = {'data': userText, 'category':  '행성'}
     async with aiohttp.ClientSession() as session:
         url = 'http://0.0.0.0:9090/chat'
         async with session.post(url, json=data) as resp:

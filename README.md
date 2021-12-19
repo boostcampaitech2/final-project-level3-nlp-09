@@ -15,6 +15,8 @@ $ cd QA_model
 # Base
 $ docker run --gpus all -it --name cudaenv -v `pwd`:/workspace/app nvcr.io/nvidia/tensorrt:21.11-py3
 
+docker run --gpus all -it -v `pwd`:/workspace/app nvcr.io/nvidia/pytorch:21.11-py3
+
 # Recommendation for pytorch
 $ docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -it --rm -v `pwd`:/workspace/app nvcr.io/nvidia/tensorrt:21.11-py3
 ```

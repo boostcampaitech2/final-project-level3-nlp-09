@@ -1,8 +1,5 @@
-import os
-import random
-import time
-import string
 from typing import List, Optional
+import traceback, os
 
 import pika
 from fastapi import FastAPI, File, UploadFile, HTTPException, Header, Request
@@ -11,41 +8,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from aiofile import AIOFile, Writer, Reader
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM 
-from QA_model.inference import QAInference
-
-inf = QAInference()
-inf.set_context()
-
-# upload_directory = os.environ['UPLOAD_PATH']
-# access_token = os.environ['ACCESS_TOKEN']
-# result_suffix = os.environ['RESULT_SUFFIX']
-# array_suffix = os.environ['ARRAY_SUFFIX']
-# queue_name = os.environ['QUEUE_NAME']
-# rabbitmq_host = os.environ['RABBITMQ_HOST']
-
-# try:
-#     os.mkdir(upload_directory)
-#     print(os.getcwd())
-# except Exception as e:
-#     print(e)
+from QA_model.inference import ExtractivedQAMdoel
 
 
-def random_string_with_time(length: int):
-    return ''.join(
-        random.choices(string.ascii_lowercase + string.digits, k=length)
-    ) + '-' + str(int(time.time()))
+try:
+    api_server_testing = os.environ['API_SERVER_TESTING']
+except:
+    api_server_testing = 'release'
 
-
-async def store_file(uploaded_file: UploadFile, destination: string):
-    async with AIOFile(os.path.join(upload_directory, destination), 'wb') as f:
-        writer = Writer(f)
-        while True:
-            chunk = await uploaded_file.read(8192)
-            if not chunk:
-                break
-            await writer(chunk)
-    return destination
-
+if api_server_testing == 'release':
+    inf = ExtractivedQAMdoel('QA_model/data/contexts')
 
 app = FastAPI()
 
@@ -58,14 +30,57 @@ app.add_middleware(
 )
 
 
+@app.get("/set_category")
+async def get_inferenec():
+    """
+    Context 카테고리 설정
+    item:
+        Return: {
+            'category': 'some category', 
+            'context': 'some context', 
+            'answer': 'title of context'
+        }
+    """
+    data = {
+        'category': '', 
+        'context': '', 
+        'answer': ''
+    }
+    if not api_server_testing == 'TESTING':
+        try:
+            # item_dict = await item.json()
+            # category = item_dict['category']
+            res = inf.set_context()
+            data['category'], data['context'], data['answer'] = res
+            return res
+        except:
+            err = traceback.format_exc()
+            print(err)
+            return {'Error':err}
+    else:
+        return data
+
 # Get inference result
 @app.post("/chat")
-async def get_inferenec(item: Request):
-    item_dict = await item.json()
-    text = item_dict['data']
-    inf.set_question(text)
-    inf.set_dataset()
-    generated = inf.run_mrc()
+async def get_inference(item: Request):
+    """
+    Question에 대한 Extractived-base MRC 모델의 결과 추론
+    item:
+        {'data': 'some question'}
+    """
+    if not api_server_testing == 'TESTING':
+        try:
+            item_dict = await item.json()
+            question = item_dict['data']
+            inf.set_question(question)
+            inf.prepare_dataset()
+            generated = inf.run_mrc()
 
-    return {'result': generated}
+            return {'result': generated}
+        except:
+            err = traceback.format_exc()
+            print(err)
+            return {'Error':err}
+    else:
+        return 'Test String입니다!!!!!!'
 

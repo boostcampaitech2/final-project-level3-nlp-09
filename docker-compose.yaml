@@ -43,6 +43,13 @@ services:
     depends_on:
       - rabbitmq
   app:
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            device_ids: ['0']
+            capabilities: [gpu]
     build:
       context: ./app
       dockerfile: ./Dockerfile
