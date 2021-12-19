@@ -1,7 +1,8 @@
 var trial = 0;
 var correctNum = 0;
 var playgame = 1;
-var answer = "거머리"
+var answer = ["거머리", "최우식", "김다미", "ESTP", "스폰지밥"];
+var category = ["동물", "연예인", "연예인", "MBTI", "만화주인공"];
 // 사용자 프로필 이미지
 var userImage =
   '<div class="media media-chat media-chat-reverse"><img class="avatar" src="https://cdn-icons-png.flaticon.com/512/4333/4333609.png" alt="..."><div class="media-body"><p class="userText"><span>';
@@ -13,6 +14,7 @@ var dictFlags = {
   selectThema: 0, // 테마 선택 여부
   sendFeedback: -1,
   feedbackMode: 0,
+  answerIdx: 0,
 };
 var saveLogger = {
   context: ["test", "test", "test", "test", "test", "test", "test", "test", "test", "test"], //임의의 context
@@ -24,81 +26,100 @@ function getBotResponse() {
   var rawText = $("#textInput").val();
   //console.log(rawText);
   $("#textInput").val("");
-  // 사용자가 아직 테마를 선택하지 않은 경우
+  // 시작 flag = selectThema
   if (dictFlags["selectThema"] == 0) {
     var userHtml = userImage + rawText + "</span></p></div></div>";
     $("#chat-content").append(userHtml);
-    $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
-    // 테마를 제대로 선택
-    if (rawText==1) {
+    $("#chat-content")
+      .stop()
+      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+    // 시작 버튼을 제대로 입력
+    if (rawText == 1) {
       // flag 변경
       dictFlags["selectThema"] = 1;
       // 게임 시작 메시지 출력
-      var botStartMessage =
-        botImage +
-        "****************************************<br>게임을 시작합니다!!<br>제가 생각하고 있는 것은 무엇일까요?" +
-        "</span></p></div></div>";
+      var botStartMessage = `${botImage}****************************************<br>게임을 시작할게!!<br>내가 생각하고 있는 것은 무엇일까?
+    ****************************************<br>나는 지금 ${category[dictFlags["answerIdx"]]}중에서 문제를 골랐어!
+      <br><b><u>정답:</u></b> 을 앞에 쓰면 정답을 입력할 수 있어!<br>ex) 정답:쿼터백
+        </span></p></div></div>`;
       $("#chat-content").append(botStartMessage);
-      $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
+      $("#chat-content")
+        .stop()
+        .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     } else {
       var botHtml = botImage + "게임을 시작하려면 1을 입력해주세요." + "</span></p></div></div>";
       $("#chat-content").append(botHtml);
-      $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
+      $("#chat-content")
+        .stop()
+        .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     }
-  //정답을 입력한 경우  
-  } else if(rawText.indexOf("정답")==0){
-    var str_len = rawText.length
+    //정답을 입력한 경우
+  } else if (rawText.indexOf("정답") == 0) {
+    var str_len = rawText.length;
     var userHtml = userImage + rawText + "</span></p></div></div>";
     $("#chat-content").append(userHtml);
-    $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
+    $("#chat-content")
+      .stop()
+      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     var botHtml = `${botImage} 정답으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
     $("#chat-content").append(botHtml);
-    $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
-    $("#chat-content").append(userHtml);
-    $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
-    if(rawText.substring(3,str_len)==answer){
-      var botAnswerMessage =
-        botImage +
-        "****************************************<br>정답입니다!!<br>" +
-        "</span></p></div></div>";
+    $("#chat-content")
+      .stop()
+      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+    if (rawText.substring(3, str_len) == answer[dictFlags["answerIdx"]]) {
+      dictFlags["answerIdx"] += 1;
+      var botAnswerMessage = `${botImage}****************************************<br>정답입니다!!<br>
+      ${category[dictFlags["answerIdx"]]}중에서 새로운 문제를 출제했으니 다시 맞춰봐!</span></p></div></div>`;
       $("#chat-content").append(botAnswerMessage);
-      $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
+      $("#chat-content")
+        .stop()
+        .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
       correctNum += 1;
       calculateCorrect();
-    }else{
+    } else {
       var botAnswerMessage =
-        botImage +
-        "****************************************<br>오답입니다!!<br>" +
-        "</span></p></div></div>";
+        botImage + "****************************************<br>오답입니다!!<br>" + "</span></p></div></div>";
       $("#chat-content").append(botAnswerMessage);
-      $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
+      $("#chat-content")
+        .stop()
+        .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     }
   } else if (trial < 10) {
     var userHtml = userImage + rawText + "</span></p></div></div>";
     $("#chat-content").append(userHtml);
-    $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
+    $("#chat-content")
+      .stop()
+      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     trial += 1;
     calculateTrial();
     console.log(trial);
     var botHtml = `${botImage} ${trial}번째 질문으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
     $("#chat-content").append(botHtml);
-    $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
+    $("#chat-content")
+      .stop()
+      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     saveLogger["userQuestions"].push(rawText); //사용자 질문 저장
     if (trial == 10) {
       var botFeedbackMessage = `${botImage} 게임이 종료되었습니다! <br>사용자 피드백을 보내시겠습니까?<br>0: 보내지 않는다. 1: 보낸다.`;
       $("#chat-content").append(botFeedbackMessage);
-      $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
+      $("#chat-content")
+        .stop()
+        .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     }
   } else if ((trial == 10) & (dictFlags["sendFeedback"] == -1)) {
     var userHtml = userImage + rawText + "</span></p></div></div>";
     $("#chat-content").append(userHtml);
-    $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
+    $("#chat-content")
+      .stop()
+      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     //사용자 피드백 받을지 여부
     if (rawText == 0) {
       // 종료메시지 출력
       var botHtml = `${botImage} 사용자 피드백 보내기 않기를 선택하셨습니다.<br>게임을 종료합니다.`;
       $("#chat-content").append(botHtml);
-      $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
+      $("#chat-content")
+        .stop()
+        .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
       dictFlags["sendFeedback"] = 0;
     } else if (rawText == 1) {
       //피드백 보내기 실행
@@ -106,13 +127,17 @@ function getBotResponse() {
       dictFlags["feedbackMode"] = 1;
       var botHtml = `${botImage} 사용자 피드백 보내기를 시작합니다.<br>질문에 대한 답이 맞는지 피드백을 보내주세요!`;
       $("#chat-content").append(botHtml);
-      $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
+      $("#chat-content")
+        .stop()
+        .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
       getUserFeedback();
       // 이하... getuserReedback함수 실행
     } else {
       var botHtml = `${botImage} 잘못 누르셨습니다.<br>0: 보내지 않는다. 1: 보낸다.`;
       $("#chat-content").append(botHtml);
-      $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
+      $("#chat-content")
+        .stop()
+        .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     }
   }
 }
@@ -124,7 +149,9 @@ function getUserFeedback() {
   if (saveLogger["userFeedbackIdx"].length != 0) {
     var userHtml = userImage + rawText + "</span></p></div></div>";
     $("#chat-content").append(userHtml);
-    $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
+    $("#chat-content")
+      .stop()
+      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
   }
 
   // 질문에 대한 사용자의 답변 저장
@@ -133,7 +160,9 @@ function getUserFeedback() {
   } else {
     var botAlert = `${botImage} 잘못 누르셨습니다.`;
     $("#chat-content").append(botAlert);
-    $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
+    $("#chat-content")
+      .stop()
+      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
   }
 
   i = saveLogger["userFeedbackIdx"].length;
@@ -146,7 +175,9 @@ function getUserFeedback() {
     //종료 문구 띄우기
     var botHtml = `${botImage} 사용자 피드백이 전송되었습니다.<br>참여해주셔서 감사합니다!🤗<br>게임을 종료합니다.`;
     $("#chat-content").append(botHtml);
-    $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
+    $("#chat-content")
+      .stop()
+      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     dictFlags["feedbackMode"] = 2;
   } else {
     // 0 or 1형태 답을 O/X로 사용자에게 보여주기 위함
@@ -156,13 +187,17 @@ function getUserFeedback() {
       var ox = "O";
     }
     // 질문할 경우
-    var botMessage = `${botImage}***********************************<br>${i}번째 사용자 질문:<br>
+    var botMessage = `${botImage}
+    ***********************************<br>정답: ${answer}<br>
+    ***********************************<br>${i}번째 사용자 질문:<br>
     ${saveLogger["userQuestions"][i - 1]}<br>
     ***********************************<br>답변: ${ox}<br>
     ***********************************<br>0: 답변이 틀리다, 1: 답변이 맞다<br>
     ***********************************`;
     $("#chat-content").append(botMessage);
-    $("#chat-content").stop().animate({scrollTop: $('#chat-content')[0].scrollHeight},1000);
+    $("#chat-content")
+      .stop()
+      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
   }
 }
 
