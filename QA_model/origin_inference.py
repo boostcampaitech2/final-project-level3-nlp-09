@@ -8,7 +8,7 @@ Open-Domain Question Answering 을 수행하는 inference 코드 입니다.
 import logging
 import sys
 from typing import Callable, List, Dict, NoReturn, Tuple
-
+S
 import numpy as np
 import pandas as pd
 
@@ -33,12 +33,13 @@ from transformers import (
 from utils_qa import postprocess_qa_predictions_inf, check_no_error
 from trainer_qa import QuestionAnsweringTrainer
 
+from arguments import (
+    ModelArguments,
+    DataTrainingArguments,
+)
 
-class ModelArguments:
-    def __init__(self):
-        self.model_name_or_path = './models/mrc/checkpoint-28500/'
-        self.config_name = None
-        self.tokenizer_name = None
+from random_context import get_random_context
+logger = logging.getLogger(__name__)
 
 class DataTrainingArguments:
     def __init__(self):
@@ -54,6 +55,15 @@ def main(question, context):
     # 가능한 arguments 들은 ./arguments.py 나 transformer package 안의 src/transformers/training_args.py 에서 확인 가능합니다.
     # --help flag 를 실행시켜서 확인할 수 도 있습니다.
 
+    parser = HfArgumentParser(
+        (ModelArguments, DataTrainingArguments, TrainingArguments)
+    )
+    model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+
+    training_args.do_predict = True
+
+    print(f"model is from {model_args.model_name_or_path}")
+    
 
     model_args = ModelArguments()
     data_args = DataTrainingArguments()
@@ -86,22 +96,25 @@ def main(question, context):
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
         config=config,
     )
-    d = {'context' : [context], 'question' : [question], 'id' : ['mrc-1']}
-    df = pd.DataFrame(data=d)
-    
-    
-    if training_args.do_predict:
-        f = Features(
-            {
-                "context": Value(dtype="string", id=None),  # 바꿈!
-                "id": Value(dtype="string", id=None),
-                "question": Value(dtype="string", id=None),
-            }
-        )
-        datasets = DatasetDict({'validation' : Dataset.from_pandas(df, features=f)})
-    # eval or predict mrc model
-    if training_args.do_eval or training_args.do_predict:
-        run_mrc(data_args, training_args, model_args, datasets, tokenizer, model)
+
+    f = Features(
+        {
+            "context": Value(dtype="string", id=None),  # 바꿈!
+            "id": Value(dtype="string", id=None),
+            "question": Value(dtype="string", id=None),
+        }
+    )
+    for _ in range(5):
+        question = input().strip()
+        d = {'context' : [context], 'question' : [question], 'id' : ['mrc-1']}
+        df = pd.DataFrame(data=d)
+        
+        
+        if training_args.do_predict:
+            datasets = DatasetDict({'validation' : Dataset.from_pandas(df, features=f)})
+        # eval or predict mrc model
+        if training_args.do_eval or training_args.do_predict:
+            run_mrc(data_args, training_args, model_args, datasets, tokenizer, model)
 
 
 def run_mrc(
@@ -197,7 +210,7 @@ def run_mrc(
             examples=examples,
             features=features,
             predictions=predictions,
-            max_answer_length=data_args.max_answer_length,
+            max_answer_length=50,
             output_dir=training_args.output_dir,
         )
         # Metric을 구할 수 있도록 Format을 맞춰줍니다.
@@ -233,6 +246,7 @@ def run_mrc(
         predictions = trainer.predict(
             test_dataset=eval_dataset, test_examples=datasets["validation"]
         )
+        print(predictions)
         # predictions.json 은 postprocess_qa_predictions() 호출시 이미 저장됩니다.
         print(
             "No metric can be presented because there is no correct answer given. Job done!"
@@ -240,11 +254,7 @@ def run_mrc(
 
 
 if __name__ == "__main__":
-    context=''
-    with open('/opt/ml/data/football.txt', 'r', encoding='utf-8') as f:
-        lines = f.readlines()
-        for line in lines:
-            line = line.strip()
-            context=line
-    question = ''
+    context, _ = get_random_context('./QA_model/model/text_dict.json')
+    print(context[:100])
+    question = '이것의 이름은 무엇인가요?'
     main(question, context)
