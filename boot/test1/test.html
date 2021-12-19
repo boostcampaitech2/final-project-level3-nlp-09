@@ -1,72 +1,92 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>Chat</title>
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js"></script>
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-        <link rel="stylesheet" type="text/css" href="test.css"/>
-	</head>
-	<!--Coded With Love By Mutiullah Samim-->
-	<body>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container-fluid">
-              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-              </button>
-              <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                  <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#">Home</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="#">리더보드</a>
-                  </li>
-                </ul>
+  <head>
+    <title>Chat</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="test.css" />
+  </head>
+  <!--Coded With Love By Mutiullah Samim-->
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">리더보드</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="page-content page-container" id="page-content">
+      <div class="padding">
+        <div class="row container d-flex justify-content-center">
+          <div class="col-md-6">
+            <div class="card card-bordered">
+              <div class="card-header">
+                <h4 class="card-title"><strong>Q100</strong></h4>
+                <h4 class="trialtitle" id="correctCount"><strong>전체 질문 횟수  0</strong></h4>
+                <h4 class="trialtitle" id="trialCount"><strong>맞힌 갯수  0</strong></h4>
+              </div>
+              <div
+                class="ps-container ps-theme-default ps-active-y"
+                id="chat-content"
+                style="overflow-y: scroll !important; height: 400px !important"
+              >
+                <div class="media media-chat">
+                  <img class="avatar" src="https://cdn-icons-png.flaticon.com/512/773/773330.png" alt="..." />
+                  <div class="media-body" id="botchatbox">
+                    <p class="botText">
+                      <span>ㅎㅇ! 나는 Q100의 QBot이야.<br /></span>
+                      <span>한 문제에서 5번 이상 틀리면 Hint를 사용할 수 있어!<br/></span>
+                      <span>게임 시작을 원하면 0을 입력해!</span>
+                    </p>
+                  </div>
+                </div>
+                <div class="media media-chat media-chat-reverse">
+                  <div class="media-body" id="userchatbox"></div>
+                </div>
+                <div class="ps-scrollbar-x-rail" style="left: 0px; bottom: 0px">
+                  <div class="ps-scrollbar-x" tabindex="0" style="left: 0px; width: 0px"></div>
+                </div>
+                <div class="ps-scrollbar-y-rail" style="top: 0px; height: 0px; right: 2px">
+                  <div class="ps-scrollbar-y" tabindex="0" style="top: 0px; height: 2px"></div>
+                </div>
+              </div>
+              <div class="publisher bt-1 border-light">
+                <img class="avatar avatar-xs" src="https://cdn-icons-png.flaticon.com/512/4333/4333609.png" alt="..." />
+                <input id="textInput" class="publisher-input" type="text" placeholder="Write something" /><button
+                  type="button"
+                  class="btn btn-primary btn-lg"
+                  id="hintButton"
+                  disabled
+                >
+                  Hint
+                </button>
               </div>
             </div>
-        </nav>
-		<div class="page-content page-container" id="page-content">
-            <div class="padding">
-                <div class="row container d-flex justify-content-center">
-                    <div class="col-md-6">
-                        <div class="card card-bordered">
-                            <div class="card-header">
-                                <h4 class="card-title"><strong>Q100</strong></h4>
-                                <h4 class="trialtitle" id="correctCount"><strong>전체 질문 횟수 : 0</strong></h4>
-                                <h4 class="trialtitle" id="trialCount"><strong>맞힌 갯수 : 0</strong></h4>
-                            </div>
-                            <div class="ps-container ps-theme-default ps-active-y" id="chat-content" style="overflow-y: scroll !important; height:400px !important;">
-                                <div class="media media-chat"> <img class="avatar" src="https://img.icons8.com/color/36/000000/administrator-male.png" alt="...">
-                                    <div class="media-body" id="botchatbox">
-                                        <p class="botText">
-                                            <span>ㅎㅇ! 나는 Q100의 QBot이야.<br></span>
-                                            <span>문제 테마를 골라!!<br></span>
-                                            <span>1.영화 2.연예인<br></span>
-                                            <span>3.운동 4.과일<br></span>
-                                            <span>5.음식 6.만화주인공<br></span>
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="media media-chat media-chat-reverse">
-                                    <div class="media-body" id="userchatbox">
-                                    </div>
-                                </div>
-                                <div class="ps-scrollbar-x-rail" style="left: 0px; bottom: 0px;">
-                                    <div class="ps-scrollbar-x" tabindex="0" style="left: 0px; width: 0px;"></div>
-                                </div>
-                                <div class="ps-scrollbar-y-rail" style="top: 0px; height: 0px; right: 2px;">
-                                    <div class="ps-scrollbar-y" tabindex="0" style="top: 0px; height: 2px;"></div>
-                                </div>
-                            </div>
-                            <div class="publisher bt-1 border-light"> <img class="avatar avatar-xs" src="https://img.icons8.com/color/36/000000/administrator-male.png" alt="..."> <input id="textInput" class="publisher-input" type="text" placeholder="Write something"><button type="button" class="btn btn-primary btn-lg" id="hintButton" disabled>Hint</button></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
-        <script src="test.js"></script>
-	</body>
+      </div>
+    </div>
+    <script src="test.js"></script>
+  </body>
 </html>
