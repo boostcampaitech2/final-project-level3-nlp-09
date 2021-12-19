@@ -35,7 +35,7 @@ class DataTrainingArguments:
     """
 
     dataset_name: Optional[str] = field(
-        default="../data/mrc.csv",
+        default="../data/train_data_v3.csv",
         metadata={"help": "The name of the dataset to use."},
     )
     overwrite_cache: bool = field(
@@ -72,11 +72,5 @@ class DataTrainingArguments:
         metadata={
             "help": "The maximum length of an answer that can be generated. This is needed because the start "
             "and end predictions are not conditioned on one another."
-        },
-    )
-    top_k_retrieval: int = field(
-        default=1,
-        metadata={
-            "help": "Define how many top-k passages to retrieve based on similarity."
         },
     )
