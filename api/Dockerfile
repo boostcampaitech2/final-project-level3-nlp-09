@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/tensorrt:21.11-py3
+FROM nvcr.io/nvidia/pytorch:21.11-py3
 
 # RUN nvidia-smi
 

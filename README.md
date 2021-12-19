@@ -20,13 +20,6 @@ docker run --gpus all -it -v `pwd`:/workspace/app nvcr.io/nvidia/pytorch:21.11-p
 # Recommendation for pytorch
 $ docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -it --rm -v `pwd`:/workspace/app nvcr.io/nvidia/tensorrt:21.11-py3
 ```
-# final-project-level3-nlp-09  
-final-project-level3-nlp-09 created by GitHub Classroom  
-* This is feat/front branch  
-    * cd front  
-    * boot 디렉안에 1안 index.html, 2안 test1, 3안 test2
-    * python myapp.py  
-
 ### Run
 ```sh
 # If container is stopped
@@ -44,7 +37,8 @@ $ docker attach cudaenv
 
 ## Build
 ```
-$ docker-compose up -d --build rabbitmq api app
+$ sudo ./build.sh
+$ docker-compose up -d --build rabbitmq app
 ```
 # Model
 ## Train
