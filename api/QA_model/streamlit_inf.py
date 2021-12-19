@@ -30,50 +30,63 @@ from transformers import (
     set_seed,
 )
 
-from QA_model.utils_qa import postprocess_qa_predictions_inf, check_no_error
-from QA_model.trainer_qa import QuestionAnsweringTrainer
+from utils_qa import postprocess_qa_predictions_inf, check_no_error
+from trainer_qa import QuestionAnsweringTrainer
 
-from QA_model.random_context import get_random_context
+from arguments import (
+    ModelArguments,
+    DataTrainingArguments,
+)
 
-class ModelArguments:
-    def __init__(self):
-        self.model_name_or_path = 'NaDy/ko-mrc-model'
-        self.config_name = None
-        self.tokenizer_name = None
+from random_context import get_random_context
+from dataclasses import asdict, dataclass, field, replace
+from typing import Any, Dict, List, Optional
+logger = logging.getLogger(__name__)
 
-class DataTrainingArguments:
-    def __init__(self):
-        self.overwrite_cache = False
-        self.preprocessing_num_workers = 4
-        self.max_seq_length = 384
-        self.pad_to_max_length = False
-        self.doc_stride = 128
-        self.max_answer_length = 50
-        
+import pickle
+import os
+class QAInference:
+    def __init__(self,
+        output_dir = './outputs/',
+        dataset_name = './QA_model/model/text_dict.json',
+        model_name_or_path = './QA_model/model/checkpoint-28500',
+        args_path = './args'
+        ) -> None:
+        self.dataset_name = dataset_name
+        self.args_path = args_path
 
-class ExtractivedQAMdoel:
-    def __init__(self, dataset_path):
-        # 가능한 arguments 들은 ./arguments.py 나 transformer package 안의 src/transformers/training_args.py 에서 확인 가능합니다.
-        # --help flag 를 실행시켜서 확인할 수 도 있습니다.
-        self.dataset_path = dataset_path
-
-        self.model_args = ModelArguments()
-        self.data_args = DataTrainingArguments()
-        self.training_args = TrainingArguments(
-            output_dir = './outputs/one_question',
-            do_predict = True,
-            fp16=True
+        parser = HfArgumentParser(
+            (ModelArguments, DataTrainingArguments, TrainingArguments)
         )
-        
+ 
+        self.model_args, self.data_args, self.training_args = parser.parse_args_into_dataclasses()
+
+        # self.load_args()
+        # self.training_args.output_dir = output_dir
+        # self.data_args.dataset_name = dataset_name
+        # self.training_args.model_name_or_path = model_name_or_path
+
+        self.training_args.do_predict = True
+
         print(f"model is from {self.model_args.model_name_or_path}")
         
+        # logging 설정
+        logging.basicConfig(
+            format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
+            datefmt="%m/%d/%Y %H:%M:%S",
+            handlers=[logging.StreamHandler(sys.stdout)],
+        )
+
+        # verbosity 설정 : Transformers logger의 정보로 사용합니다 (on main process only)
+        logger.info("Training/evaluation parameters %s", self.training_args)
+
         # 모델을 초기화하기 전에 난수를 고정합니다.
         set_seed(self.training_args.seed)
         
         # AutoConfig를 이용하여 pretrained model 과 tokenizer를 불러옵니다.
         # argument로 원하는 모델 이름을 설정하면 옵션을 바꿀 수 있습니다.
         config = AutoConfig.from_pretrained(
-            self.model_args.config_name
+            self.model_args.config_namew
             if self.model_args.config_name
             else self.model_args.model_name_or_path,
         )
@@ -88,41 +101,45 @@ class ExtractivedQAMdoel:
             from_tf=bool(".ckpt" in self.model_args.model_name_or_path),
             config=config,
         )
-
-    def set_context(self):
-        self.category, self.context, self.answer = get_random_context(self.dataset_path)
-        return self.category, self.context, self.answer
-
-    def set_question(self, question):
-        self.question = question
-
-    def prepare_dataset(self):
-        d = {'context' : [self.context], 'question' : [self.question], 'id' : ['mrc-1']}
-        df = pd.DataFrame(data=d)
         
-        f = Features(
+        self.f = Features(
             {
                 "context": Value(dtype="string", id=None),  # 바꿈!
                 "id": Value(dtype="string", id=None),
                 "question": Value(dtype="string", id=None),
             }
         )
-        self.datasets = DatasetDict({'validation' : Dataset.from_pandas(df, features=f)})
+        self.quesiton = ''
+        self.context = ''
+
+    def load_args(self):
+        with open(os.path.join(self.args_path, 'model_args.pkl'), 'rb') as file:
+            self.model_args = pickle.load(file)
+        with open(os.path.join(self.args_path, 'data_args.pkl'), 'rb') as file:
+            self.data_args = pickle.load(file)
+        with open(os.path.join(self.args_path, 'training_args.pkl'), 'rb') as file:
+            self.training_args = pickle.load(file)
+
+    def set_context(self):
+        self.context, _ = get_random_context(self.dataset_name)
+    
+    def set_question(self, question):
+        self.question = question
+
+    def set_dataset(self):
+        assert self.context != '' and self.question != ''
+
+        d = {'context' : [self.context], 'question' : [self.question], 'id' : ['mrc-1']}
+        df = pd.DataFrame(data=d)
+        self.datasets = DatasetDict({'validation' : Dataset.from_pandas(df, features=self.f)})
         
     def run_mrc(self):
-        return self._run_mrc(self.data_args, self.training_args, self.model_args, 
-            self.datasets, self.tokenizer, self.model)
-
-
-    def _run_mrc(
-        self,
-        data_args: DataTrainingArguments,
-        training_args: TrainingArguments,
-        model_args: ModelArguments,
-        datasets: DatasetDict,
-        tokenizer,
-        model,
-    ) -> NoReturn:
+        data_args = self.data_args
+        training_args = self.training_args
+        model_args = self.model_args
+        datasets = self.datasets
+        tokenizer = self.tokenizer
+        model = self.model
 
         # eval 혹은 prediction에서만 사용함
         column_names = datasets["validation"].column_names
@@ -138,7 +155,6 @@ class ExtractivedQAMdoel:
         last_checkpoint, max_seq_length = check_no_error(
             data_args, training_args, datasets, tokenizer
         )
-        # 싹 바꿈!
         def prepare_validation_features(examples):
             # truncation과 padding(length가 짧을때만)을 통해 toknization을 진행하며, stride를 이용하여 overflow를 유지합니다.
             # 각 example들은 이전의 context와 조금씩 겹치게됩니다.
@@ -208,7 +224,7 @@ class ExtractivedQAMdoel:
                 examples=examples,
                 features=features,
                 predictions=predictions,
-                max_answer_length=data_args.max_answer_length,
+                max_answer_length=50,
                 output_dir=training_args.output_dir,
             )
             # Metric을 구할 수 있도록 Format을 맞춰줍니다.
@@ -237,14 +253,43 @@ class ExtractivedQAMdoel:
             compute_metrics=compute_metrics,
         )
 
-        #### eval dataset & eval example - predictions.json 생성됨
-        if training_args.do_predict:
-            predictions = trainer.predict(
-                test_dataset=eval_dataset, test_examples=datasets["validation"]
-            )
-            print(predictions)
-            # predictions.json 은 postprocess_qa_predictions() 호출시 이미 저장됩니다.
-            print(
-                "No metric can be presented because there is no correct answer given. Job done!"
-            )
-            return predictions[0]['prediction_text']
+        logger.info("*** Evaluate ***")
+
+        predictions = trainer.predict(
+            test_dataset=eval_dataset, test_examples=datasets["validation"]
+        )
+        # predictions.json 은 postprocess_qa_predictions() 호출시 이미 저장됩니다.
+        print(
+            "No metric can be presented because there is no correct answer given. Job done!"
+        )
+        print(predictions[0]['prediction_text'])
+        return predictions[0]['prediction_text']
+
+import streamlit as st
+
+if __name__ == "__main__":
+    inf = QAInference()
+
+    inf.set_context()
+    # for _ in range(5):
+    #    inf.set_question(st.text_input('Enter Question'))
+    #    inf.set_dataset()
+    #    # print(inf.run_mrc())
+    #    st.write('Answer:', inf.run_mrc())
+
+    def get_text():
+        input_text = st.text_input("You: ","So, what's in your mind")
+        return input_text
+
+    st.sidebar.title("NLP Bot")
+    st.title("""
+    NLP Bot  
+    NLP Bot is an NLP conversational chatterbot. Initialize the bot by clicking the "Initialize bot" button. 
+    """)
+            
+    inf.set_question(get_text())
+    inf.set_dataset()
+    if True:
+        st.text_area("Bot:", value=inf.run_mrc(), height=200, max_chars=None, key=None)
+    else:
+        st.text_area("Bot:", value="Please start the bot by clicking sidebar button", height=200, max_chars=None, key=None)
