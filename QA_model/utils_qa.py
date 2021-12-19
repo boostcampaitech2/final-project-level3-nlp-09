@@ -528,17 +528,17 @@ def postprocess_qa_predictions_inf(
         for pred in predictions:
             offsets = pred.pop("offsets")
             if offsets[0]==0 and offsets[1]==0:
-                pred["text"] = "No Answer"
+                pred["text"] = "No answer"
                 continue
             pred["text"] = context[offsets[0] : offsets[1]]
 
         # rare edge case에는 null이 아닌 예측이 하나도 없으며 failure를 피하기 위해 fake prediction을 만듭니다.
         if len(predictions) == 0 or (
-            len(predictions) == 1 and predictions[0]["text"] == "No Answer"
+            len(predictions) == 1 and predictions[0]["text"] == "No answer"
         ):
 
             predictions.insert(
-                0, {"text": "No Answer", "start_logit": 0.0, "end_logit": 0.0, "score": 0.0}
+                0, {"text": "No answer", "start_logit": 0.0, "end_logit": 0.0, "score": 0.0}
             )
 
         # 모든 점수의 소프트맥스를 계산합니다(we do it with numpy to stay independent from torch/tf in this file, using the LogSumExp trick).
@@ -586,40 +586,40 @@ def postprocess_qa_predictions_inf(
         ]
 
     # output_dir이 있으면 모든 dicts를 저장합니다.
-    if output_dir is not None:
-        assert os.path.isdir(output_dir), f"{output_dir} is not a directory."
+    # if output_dir is not None:
+    #     assert os.path.isdir(output_dir), f"{output_dir} is not a directory."
 
-        prediction_file = os.path.join(
-            output_dir,
-            "predictions.json" if prefix is None else f"predictions_{prefix}".json,
-        )
-        nbest_file = os.path.join(
-            output_dir,
-            "nbest_predictions.json"
-            if prefix is None
-            else f"nbest_predictions_{prefix}".json,
-        )
-        if version_2_with_negative:
-            null_odds_file = os.path.join(
-                output_dir,
-                "null_odds.json" if prefix is None else f"null_odds_{prefix}".json,
-            )
+    #     prediction_file = os.path.join(
+    #         output_dir,
+    #         "predictions.json" if prefix is None else f"predictions_{prefix}".json,
+    #     )
+    #     nbest_file = os.path.join(
+    #         output_dir,
+    #         "nbest_predictions.json"
+    #         if prefix is None
+    #         else f"nbest_predictions_{prefix}".json,
+    #     )
+    #     if version_2_with_negative:
+    #         null_odds_file = os.path.join(
+    #             output_dir,
+    #             "null_odds.json" if prefix is None else f"null_odds_{prefix}".json,
+    #         )
 
-        logger.info(f"Saving predictions to {prediction_file}.")
-        with open(prediction_file, "w", encoding="utf-8") as writer:
-            writer.write(
-                json.dumps(all_predictions, indent=4, ensure_ascii=False) + "\n"
-            )
-        logger.info(f"Saving nbest_preds to {nbest_file}.")
-        with open(nbest_file, "w", encoding="utf-8") as writer:
-            writer.write(
-                json.dumps(all_nbest_json, indent=4, ensure_ascii=False) + "\n"
-            )
-        if version_2_with_negative:
-            logger.info(f"Saving null_odds to {null_odds_file}.")
-            with open(null_odds_file, "w", encoding="utf-8") as writer:
-                writer.write(
-                    json.dumps(scores_diff_json, indent=4, ensure_ascii=False) + "\n"
-                )
+    #     logger.info(f"Saving predictions to {prediction_file}.")
+    #     with open(prediction_file, "w", encoding="utf-8") as writer:
+    #         writer.write(
+    #             json.dumps(all_predictions, indent=4, ensure_ascii=False) + "\n"
+    #         )
+    #     logger.info(f"Saving nbest_preds to {nbest_file}.")
+    #     with open(nbest_file, "w", encoding="utf-8") as writer:
+    #         writer.write(
+    #             json.dumps(all_nbest_json, indent=4, ensure_ascii=False) + "\n"
+    #         )
+    #     if version_2_with_negative:
+    #         logger.info(f"Saving null_odds to {null_odds_file}.")
+    #         with open(null_odds_file, "w", encoding="utf-8") as writer:
+    #             writer.write(
+    #                 json.dumps(scores_diff_json, indent=4, ensure_ascii=False) + "\n"
+    #             )
 
     return all_predictions

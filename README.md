@@ -1,3 +1,26 @@
+## CODE GUIDE
+
+data를 번역하고 싶다면.. (pororo)
+
+```python
+python translation.py
+```
+
+no answer data를 생성하고 싶다면.. `augmentation.ipynb` 실행
+
+모델을 학습시키고 싶다면.. `train.py`의 argument를 확인하고 실행
+
+```python
+python train.py
+```
+
+inference를 하고 싶다면.. `inference.py` 의 argument를 확인하고 실행
+(이 때 사용하고 싶은 모델을 save_model 폴더에서 찾아 argument로 입력해줘야함.)
+
+```python
+python inference.py
+```
+
 # twenty-questions
 # Env Setting
 ## Train, Inference env
@@ -18,13 +41,23 @@ $ docker run --gpus all -it --name cudaenv -v `pwd`:/workspace/app nvcr.io/nvidi
 # Recommendation for pytorch
 $ docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -it --rm -v `pwd`:/workspace/app nvcr.io/nvidia/tensorrt:21.11-py3
 ```
+# final-project-level3-nlp-09  
+final-project-level3-nlp-09 created by GitHub Classroom  
+* This is feat/front branch  
+    * cd front  
+    * boot 디렉안에 1안 index.html, 2안 test1, 3안 test2
+    * python myapp.py  
+
 ### Run
 ```sh
 # If container is stopped
 $ docker start cudaenv
 $ docker attach cudaenv
 ```
+---
+## Airflow
 
+[Airflow documnet](airflow/README.md)
 
 
 # API server

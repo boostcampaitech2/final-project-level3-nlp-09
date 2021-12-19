@@ -8,7 +8,7 @@ Open-Domain Question Answering 을 수행하는 inference 코드 입니다.
 import logging
 import sys
 from typing import Callable, List, Dict, NoReturn, Tuple
-
+S
 import numpy as np
 import pandas as pd
 
@@ -41,6 +41,15 @@ from arguments import (
 from random_context import get_random_context
 logger = logging.getLogger(__name__)
 
+class DataTrainingArguments:
+    def __init__(self):
+        self.overwrite_cache = False
+        self.preprocessing_num_workers = 4
+        self.max_seq_length = 384,
+        self.pad_to_max_length = False,
+        self.doc_stride = 128,
+        self.max_answer_length = 50
+        
 
 def main(question, context):
     # 가능한 arguments 들은 ./arguments.py 나 transformer package 안의 src/transformers/training_args.py 에서 확인 가능합니다.
@@ -55,17 +64,16 @@ def main(question, context):
 
     print(f"model is from {model_args.model_name_or_path}")
     
-    # print
-    # logging 설정
-    logging.basicConfig(
-        format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
-        datefmt="%m/%d/%Y %H:%M:%S",
-        handlers=[logging.StreamHandler(sys.stdout)],
+    model_args = ModelArguments()
+    data_args = DataTrainingArguments()
+    training_args = TrainingArguments(
+        output_dir = './outputs/one_question',
+        do_predict = True,
+        fp16=True
     )
-
-    # verbosity 설정 : Transformers logger의 정보로 사용합니다 (on main process only)
-    logger.info("Training/evaluation parameters %s", training_args)
-
+    
+    print(f"model is from {model_args.model_name_or_path}")
+    
     # 모델을 초기화하기 전에 난수를 고정합니다.
     set_seed(training_args.seed)
     
@@ -233,7 +241,7 @@ def run_mrc(
         compute_metrics=compute_metrics,
     )
 
-    logger.info("*** Evaluate ***")
+
 
     #### eval dataset & eval example - predictions.json 생성됨
     if training_args.do_predict:
