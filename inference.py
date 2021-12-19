@@ -36,7 +36,7 @@ from trainer_qa import QuestionAnsweringTrainer
 
 class ModelArguments:
     def __init__(self):
-        self.model_name_or_path = './models/mrc/checkpoint-28500/'
+        self.model_name_or_path = 'NaDy/ko-mrc-model'
         self.config_name = None
         self.tokenizer_name = None
 
