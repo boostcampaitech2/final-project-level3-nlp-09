@@ -60,22 +60,8 @@ class QAInference:
         ) -> None:
         self.dataset_name = dataset_name
         self.args_path = args_path
+        self.model_name_or_path = model_name_or_path
 
-        parser = HfArgumentParser(
-            (ModelArguments, DataTrainingArguments, TrainingArguments)
-        )
- 
-        self.model_args, self.data_args, self.training_args = parser.parse_args_into_dataclasses()
-
-        # self.load_args()
-        # self.training_args.output_dir = output_dir
-        # self.data_args.dataset_name = dataset_name
-        # self.training_args.model_name_or_path = model_name_or_path
-
-        self.training_args.do_predict = True
-
-        print(f"model is from {self.model_args.model_name_or_path}")
-        
         # logging 설정
         logging.basicConfig(
             format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
@@ -83,28 +69,23 @@ class QAInference:
             handlers=[logging.StreamHandler(sys.stdout)],
         )
 
-        # verbosity 설정 : Transformers logger의 정보로 사용합니다 (on main process only)
-        logger.info("Training/evaluation parameters %s", self.training_args)
-
         # 모델을 초기화하기 전에 난수를 고정합니다.
-        set_seed(self.training_args.seed)
+        set_seed(42)
         
         # AutoConfig를 이용하여 pretrained model 과 tokenizer를 불러옵니다.
         # argument로 원하는 모델 이름을 설정하면 옵션을 바꿀 수 있습니다.
         config = AutoConfig.from_pretrained(
-            self.model_args.config_namew
-            if self.model_args.config_name
-            else self.model_args.model_name_or_path,
+            self.model_name_or_path,
         )
         self.tokenizer = AutoTokenizer.from_pretrained(
             self.model_args.tokenizer_name
             if self.model_args.tokenizer_name
-            else self.model_args.model_name_or_path,
+            else self.model_name_or_path,
             use_fast=True,
         )
         self.model = AutoModelForQuestionAnswering.from_pretrained(
             self.model_args.model_name_or_path,
-            from_tf=bool(".ckpt" in self.model_args.model_name_or_path),
+            from_tf=bool(".ckpt" in self.model_name_or_path),
             config=config,
         )
         
@@ -237,8 +218,9 @@ class QAInference:
             formatted_predictions = [
                 {"id": k, "prediction_text": v} for k, v in predictions.items()
             ]
-            if training_args.do_predict:
-                return formatted_predictions
+
+            # orgin args: do_predict = True
+            return formatted_predictions 
 
         metric = load_metric("squad")
 
@@ -323,16 +305,17 @@ class QAInference:
 
 
 if __name__ == "__main__":
-    f = open("resnet_engine_pytorch.trt", "rb")
+    tensorrt_file_name = './export/best.trt'
+    f = open(tensorrt_file_name,"rb")
     runtime = trt.Runtime(trt.Logger(trt.Logger.WARNING)) 
 
     engine = runtime.deserialize_cuda_engine(f.read())
     context = engine.create_execution_context()
+    
     print('Load image')
 
     f.close()
     inf = QAInference()
-
     inf.set_context()
     for _ in range(5):
         print('Input Question')
