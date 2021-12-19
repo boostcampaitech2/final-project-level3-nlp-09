@@ -154,3 +154,5 @@ wandb/
 *.onnx
 **/export/
 **/checkpoint-28500/
+**/*cookie*
+model.zip

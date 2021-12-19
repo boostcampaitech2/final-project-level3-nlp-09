@@ -349,7 +349,8 @@ def check_no_error(
             "at https://huggingface.co/transformers/index.html#bigtable to find the model types that meet this "
             "requirement"
         )
-
+    # print(f'data_args.max_seq_length, type={type(data_args.max_seq_length)}, {data_args.max_seq_length}')
+    # print(f'tokenizer.model_max_length, type={type(tokenizer.model_max_length)}, {tokenizer.model_max_length}')
     if data_args.max_seq_length > tokenizer.model_max_length:
         logger.warn(
             f"The max_seq_length passed ({data_args.max_seq_length}) is larger than the maximum length for the"
