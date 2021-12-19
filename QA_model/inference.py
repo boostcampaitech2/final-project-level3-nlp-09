@@ -37,7 +37,7 @@ from QA_model.random_context import get_random_context
 
 class ModelArguments:
     def __init__(self):
-        self.model_name_or_path = './QA_model/model/checkpoint-28500/'
+        self.model_name_or_path = 'NaDy/ko-mrc-model'
         self.config_name = None
         self.tokenizer_name = None
 
