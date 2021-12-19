@@ -1,4 +1,8 @@
-FROM python:3.8
+FROM nvcr.io/nvidia/tensorrt:21.11-py3
+
+# RUN nvidia-smi
+
+# ENV API_SERVER_TESTING TESTING
 
 ADD ./ /api
 
