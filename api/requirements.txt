@@ -1,0 +1,12 @@
+fastapi==0.70.0
+pydantic==1.8.2
+starlette==0.16.0
+uvicorn==0.13.4
+python-multipart==0.0.5
+aiofile==1.5.2
+aiofiles==0.7.0
+pika==1.2.0
+torch==1.6.0
+transformers==4.12.5
+pandas
+datasets
