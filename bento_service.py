@@ -67,9 +67,9 @@ class APIService(BentoService):
         outputs= model.forward(
             input_ids= tokenized_text['input_ids'].to(device),
             attention_mask= tokenized_text['attention_mask'].to(device)
-        )
+        )['logits']
         logits= outputs
-        logits= F.softmax(logits, dim= -1)
+        # logits= F.softmax(logits, dim= -1)
         logits= logits.detach().cpu().numpy()
 
         prob= logits
