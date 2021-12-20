@@ -2,8 +2,11 @@ var totaltrial = 0;//전체 질문 횟수
 var correctNum = 0;//맞춘 문제 개수
 var playgame = 1;//게임을 시작한지에 대한 flag
 var problemtrial = 0;//한문제당 질문한 횟수
-var answer = ["거머리", "최우식", "김다미", "ESTP", "스폰지밥"];//정답
-var category = ["동물", "연예인", "연예인", "MBTI", "만화주인공"];//카테고리
+
+var answer_list = ["ESFJ", "ESFP", "ESTJ", "ESTP", "INFP", "INTP", "헤르메스", "헤파이스토스", "똘똘이 스머프", "파파 스머프", "농구", "미식축구", "배구", "배드민턴", "스쿼시", "야구", "축구", "태권도", "테니스", "펜싱", "금성", "목성", "수성", "지구", "천왕성", "토성", "해왕성", "화성"];//정답
+var category_list = ["mbti", "그리스로마신화(등장인물)", "스머프", "운동","행성"];//카테고리
+var answer=""; //정답
+var category=""; //카테고리
 // 사용자 프로필 이미지
 var userImage =
   '<div class="media media-chat media-chat-reverse"><img class="avatar" src="https://cdn-icons-png.flaticon.com/512/4333/4333609.png" alt="..."><div class="media-body"><p class="userText"><span>';//유저 이미지
@@ -40,8 +43,13 @@ function getBotResponse() {
       // flag 변경
       dictFlags["selectThema"] = 1;
       // 게임 시작 메시지 출력
+      var tmp = pickQuestion();//답과 카테고리 정함
+      answer = tmp[0];//답
+      category = tmp[1];//카테고리
+      console.log(answer);
+      console.log(category);
       var botStartMessage = `${botImage}****************************************<br>게임을 시작할게!!<br>내가 생각하고 있는 것은 무엇일까?
-    ****************************************<br>나는 지금 ${category[dictFlags["answerIdx"]]}중에서 문제를 골랐어!
+    ****************************************<br>나는 지금 ${category} 카테고리에서 문제를 골랐어!
       <br><b><u>정답:</u></b> 을 앞에 쓰면 정답을 입력할 수 있어!<br>ex) 정답:쿼터백
         </span></p></div></div>`;
       $("#chat-content").append(botStartMessage);
@@ -71,10 +79,14 @@ function getBotResponse() {
       .stop()
       .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     //정답인 경우
-    if (rawText.substring(3, str_len) == answer[dictFlags["answerIdx"]]) {
-      dictFlags["answerIdx"] += 1;
+    if (rawText.substring(3, str_len) == answer) {
+      var tmp = pickQuestion();//답과 카테고리 정함
+      answer = tmp[0];//답
+      category = tmp[1];//카테고리
+      console.log(answer);
+      console.log(category);
       var botAnswerMessage = `${botImage}****************************************<br>정답입니다!!<br>
-      ${category[dictFlags["answerIdx"]]}중에서 새로운 문제를 출제했으니 다시 맞춰봐!</span></p></div></div>`;
+      ${category} 카테고리에서 새로운 문제를 출제했으니 다시 맞춰봐!</span></p></div></div>`;
       $("#chat-content").append(botAnswerMessage);
       $("#chat-content")
         .stop()
@@ -82,6 +94,8 @@ function getBotResponse() {
       correctNum += 1;
       problemtrial = 0;
       calculateCorrect();
+      totaltrial += 1;
+      calculateTrial();
     } else {//오답인 경우
       var botAnswerMessage =
         botImage + "****************************************<br>오답입니다!!<br>" + "</span></p></div></div>";
@@ -89,6 +103,8 @@ function getBotResponse() {
       $("#chat-content")
         .stop()
         .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+      totaltrial += 1;
+      calculateTrial();
     }
   } else if (totaltrial < 10) {// boolq 질문을 하는 경우
     //사용자 질문 보여주기
@@ -236,6 +252,22 @@ function saveCsv() {
   document.body.appendChild(link);
   link.click();
 }
+//random으로 문제와 카테고리 return 해주는 함수
+function pickQuestion() {
+    var randomQuestionIdx = Math.floor(Math.random() * 28);
+    if(randomQuestionIdx>=0 && randomQuestionIdx<=5){
+        return [answer_list[randomQuestionIdx], category_list[0]];
+    }else if(randomQuestionIdx>=6 && randomQuestionIdx<=7){
+        return [answer_list[randomQuestionIdx], category_list[1]];
+    }else if(randomQuestionIdx>=8 && randomQuestionIdx<=9){
+        return [answer_list[randomQuestionIdx], category_list[2]];
+    }else if(randomQuestionIdx>=10 && randomQuestionIdx<=19){
+        return [answer_list[randomQuestionIdx], category_list[3]];
+    }else{
+        return [answer_list[randomQuestionIdx], category_list[4]];
+    }
+}
+
 //한 문제당 질문 횟수가 5이상이면 힌트 버튼 활성화
 function getHintResponse(problemtrial) {
   if (problemtrial >= 5) {
