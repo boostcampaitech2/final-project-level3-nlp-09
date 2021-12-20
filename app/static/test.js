@@ -1,6 +1,7 @@
-var trial = 0;
+var totaltrial = 0;
 var correctNum = 0;
 var playgame = 1;
+var problemtrial = 0;
 var answer = ["거머리", "최우식", "김다미", "ESTP", "스폰지밥"];
 var category = ["동물", "연예인", "연예인", "MBTI", "만화주인공"];
 // 사용자 프로필 이미지
@@ -75,6 +76,7 @@ function getBotResponse() {
         .stop()
         .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
       correctNum += 1;
+      problemtrial = 0;
       calculateCorrect();
     } else {
       var botAnswerMessage =
@@ -84,29 +86,30 @@ function getBotResponse() {
         .stop()
         .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     }
-  } else if (trial < 10) {
+  } else if (totaltrial < 10) {
     var userHtml = userImage + rawText + "</span></p></div></div>";
     $("#chat-content").append(userHtml);
     $("#chat-content")
       .stop()
       .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
-    trial += 1;
+    totaltrial += 1;
+    problemtrial += 1;
     calculateTrial();
-    console.log(trial);
-    var botHtml = `${botImage} ${trial}번째 질문으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
+    console.log(totaltrial);
+    var botHtml = `${botImage} ${totaltrial}번째 질문으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
     $("#chat-content").append(botHtml);
     $("#chat-content")
       .stop()
       .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     saveLogger["userQuestions"].push(rawText); //사용자 질문 저장
-    if (trial == 10) {
+    if (totaltrial == 10) {
       var botFeedbackMessage = `${botImage} 게임이 종료되었습니다! <br>사용자 피드백을 보내시겠습니까?<br>0: 보내지 않는다. 1: 보낸다.`;
       $("#chat-content").append(botFeedbackMessage);
       $("#chat-content")
         .stop()
         .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     }
-  } else if ((trial == 10) & (dictFlags["sendFeedback"] == -1)) {
+  } else if ((totaltrial == 10) & (dictFlags["sendFeedback"] == -1)) {
     var userHtml = userImage + rawText + "</span></p></div></div>";
     $("#chat-content").append(userHtml);
     $("#chat-content")
@@ -221,8 +224,8 @@ function saveCsv() {
   link.click();
 }
 
-function getHintResponse(trial) {
-  if (trial >= 5) {
+function getHintResponse(problemtrial) {
+  if (problemtrial >= 5) {
     document.getElementById("hintButton").disabled = false;
   } else {
     document.getElementById("hintButton").disabled = true;
@@ -231,7 +234,7 @@ function getHintResponse(trial) {
 
 function calculateTrial() {
   var t_element = document.getElementById("trialCount");
-  t_element.innerText = "전체 질문 횟수 " + trial;
+  t_element.innerText = "전체 질문 횟수 " + totaltrial;
 }
 
 function calculateCorrect() {
@@ -242,7 +245,7 @@ function calculateCorrect() {
 $("#textInput").keypress(function (e) {
   if ((e.keyCode == "13") & (dictFlags["feedbackMode"] == 0)) {
     getBotResponse();
-    getHintResponse(trial);
+    getHintResponse(problemtrial);
     calculateTrial();
     calculateCorrect();
   } else if ((e.keyCode == "13") & (dictFlags["feedbackMode"] == 1)) {
@@ -251,20 +254,30 @@ $("#textInput").keypress(function (e) {
 });
 
 $("#hintButton").click(function () {
-  getHintResponse(trial);
-  console.log("Hint");
-  console.log(trial);
-  
-  /* TODO */
-  // data: BoolQA model의 response, Extractived-based MRC model의 출력
-  var botHtml = `${botImage} Hint<br>TESTHINT를 사용했습니다.</span></p></div></div>`;
-  $("#chat-content").append(botHtml);
-  $("#chat-content")
-    .stop()
-    .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
-  document
-    .getElementById("userInput")
-    .scrollIntoView({ block: "start", behavior: "smooth" });
+  getHintResponse(problemtrial);
+  var rawText = $("#textInput").val();
+  $("#textInput").val("");
+  console.log(rawText)
+  if(rawText.length==0){
+    var botHtml = `${botImage} 주관식 질문을 입력하세요.<br>`;
+    $("#chat-content").append(botHtml);
+    $("#chat-content")
+      .stop()
+      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+  }else{
+    var userHtml = userImage + rawText + "</span></p></div></div>";
+    $("#chat-content").append(userHtml);
+    $("#chat-content")
+      .stop()
+      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+    var botHtml = `${botImage} Hint 질문으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
+    $("#chat-content").append(botHtml);
+    $("#chat-content")
+      .stop()
+      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+    totaltrial += 1;
+    problemtrial += 1;
+  }
   // $.get("/get_hint", { msg: rawText }).done(function(data) {
   //   // data: BoolQA model의 response, Extractived-based MRC model의 출력
   //   var botHtml = `${botImage} Hint<br>${data}를 사용했습니다.</span></p></div></div>`;
@@ -276,8 +289,6 @@ $("#hintButton").click(function () {
   //     .getElementById("userInput")
   //     .scrollIntoView({ block: "start", behavior: "smooth" });
   // });
-
-  trial = 0;
   calculateTrial();
-  getHintResponse(trial);
+  getHintResponse(problemtrial);
 });
