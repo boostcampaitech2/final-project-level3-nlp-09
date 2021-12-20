@@ -256,17 +256,26 @@ $("#hintButton").click(function () {
   console.log(trial);
   
   /* TODO */
-  $.get("/get_hint", { msg: rawText }).done(function(data) {
-    // data: BoolQA model의 response, Extractived-based MRC model의 출력
-    var botHtml = `${botImage} Hint<br>${data}를 사용했습니다.</span></p></div></div>`;
-    $("#chat-content").append(botHtml);
-    $("#chat-content")
-      .stop()
-      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
-    document
-      .getElementById("userInput")
-      .scrollIntoView({ block: "start", behavior: "smooth" });
-  });
+  // data: BoolQA model의 response, Extractived-based MRC model의 출력
+  var botHtml = `${botImage} Hint<br>TESTHINT를 사용했습니다.</span></p></div></div>`;
+  $("#chat-content").append(botHtml);
+  $("#chat-content")
+    .stop()
+    .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+  document
+    .getElementById("userInput")
+    .scrollIntoView({ block: "start", behavior: "smooth" });
+  // $.get("/get_hint", { msg: rawText }).done(function(data) {
+  //   // data: BoolQA model의 response, Extractived-based MRC model의 출력
+  //   var botHtml = `${botImage} Hint<br>${data}를 사용했습니다.</span></p></div></div>`;
+  //   $("#chat-content").append(botHtml);
+  //   $("#chat-content")
+  //     .stop()
+  //     .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+  //   document
+  //     .getElementById("userInput")
+  //     .scrollIntoView({ block: "start", behavior: "smooth" });
+  // });
 
   trial = 0;
   calculateTrial();
