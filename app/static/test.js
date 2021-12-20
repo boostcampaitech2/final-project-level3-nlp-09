@@ -1,15 +1,15 @@
-var totaltrial = 0;
-var correctNum = 0;
-var playgame = 1;
-var problemtrial = 0;
-var answer = ["거머리", "최우식", "김다미", "ESTP", "스폰지밥"];
-var category = ["동물", "연예인", "연예인", "MBTI", "만화주인공"];
+var totaltrial = 0;//전체 질문 횟수
+var correctNum = 0;//맞춘 문제 개수
+var playgame = 1;//게임을 시작한지에 대한 flag
+var problemtrial = 0;//한문제당 질문한 횟수
+var answer = ["거머리", "최우식", "김다미", "ESTP", "스폰지밥"];//정답
+var category = ["동물", "연예인", "연예인", "MBTI", "만화주인공"];//카테고리
 // 사용자 프로필 이미지
 var userImage =
-  '<div class="media media-chat media-chat-reverse"><img class="avatar" src="https://cdn-icons-png.flaticon.com/512/4333/4333609.png" alt="..."><div class="media-body"><p class="userText"><span>';
+  '<div class="media media-chat media-chat-reverse"><img class="avatar" src="https://cdn-icons-png.flaticon.com/512/4333/4333609.png" alt="..."><div class="media-body"><p class="userText"><span>';//유저 이미지
 // 로봇 프로필 이미지
 var botImage =
-  '<div class="media media-chat"><img class="avatar" src="https://cdn-icons-png.flaticon.com/512/773/773330.png" alt="..."><div class="media-body"><p class="userText"><span>';
+  '<div class="media media-chat"><img class="avatar" src="https://cdn-icons-png.flaticon.com/512/773/773330.png" alt="..."><div class="media-body"><p class="userText"><span>';//봇 이미지
 // 상태 표시를 위한 flag 저장용 딕셔너리
 var dictFlags = {
   selectThema: 0, // 테마 선택 여부
@@ -20,12 +20,13 @@ var dictFlags = {
 var saveLogger = {
   context: ["test", "test", "test", "test", "test", "test", "test", "test", "test", "test"], //임의의 context
   userQuestions: [], //사용자가 던진 Y/N 질문 저장
-  botAnswers: [0, 1, 0, 1, 0, 1, 0, 1, 1, 1], // Y/N 질문에 대한 로봇의 답 저장 //임의의 답변
+  botAnswers: [], // Y/N 질문에 대한 로봇의 답 저장 //임의의 답변
   userFeedbackIdx: [], // 사용자가 답함(0 or 1)
 };
+//엔터를 쳤을 때 일어나는 일
 function getBotResponse() {
+  //사용자 입력을 가져옴
   var rawText = $("#textInput").val();
-  //console.log(rawText);
   $("#textInput").val("");
   // 시작 flag = selectThema
   if (dictFlags["selectThema"] == 0) {
@@ -47,7 +48,7 @@ function getBotResponse() {
       $("#chat-content")
         .stop()
         .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
-    } else {
+    } else {//게임 시작을 올바르게 하지 않은 경우
       var botHtml = botImage + "게임을 시작하려면 1을 입력해주세요." + "</span></p></div></div>";
       $("#chat-content").append(botHtml);
       $("#chat-content")
@@ -57,16 +58,19 @@ function getBotResponse() {
     //정답을 입력한 경우
   } else if (rawText.indexOf("정답") == 0) {
     var str_len = rawText.length;
+    // 유저가 입력한 정답 값 보여주기
     var userHtml = userImage + rawText + "</span></p></div></div>";
     $("#chat-content").append(userHtml);
     $("#chat-content")
       .stop()
       .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+    //정답으로 입력한 값 보여주기
     var botHtml = `${botImage} 정답으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
     $("#chat-content").append(botHtml);
     $("#chat-content")
       .stop()
       .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+    //정답인 경우
     if (rawText.substring(3, str_len) == answer[dictFlags["answerIdx"]]) {
       dictFlags["answerIdx"] += 1;
       var botAnswerMessage = `${botImage}****************************************<br>정답입니다!!<br>
@@ -78,7 +82,7 @@ function getBotResponse() {
       correctNum += 1;
       problemtrial = 0;
       calculateCorrect();
-    } else {
+    } else {//오답인 경우
       var botAnswerMessage =
         botImage + "****************************************<br>오답입니다!!<br>" + "</span></p></div></div>";
       $("#chat-content").append(botAnswerMessage);
@@ -86,7 +90,8 @@ function getBotResponse() {
         .stop()
         .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     }
-  } else if (totaltrial < 10) {
+  } else if (totaltrial < 10) {// boolq 질문을 하는 경우
+    //사용자 질문 보여주기
     var userHtml = userImage + rawText + "</span></p></div></div>";
     $("#chat-content").append(userHtml);
     $("#chat-content")
@@ -96,12 +101,20 @@ function getBotResponse() {
     problemtrial += 1;
     calculateTrial();
     console.log(totaltrial);
+    // 모델이 사용자의 어떤 질문을 받았는지 보여주기
     var botHtml = `${botImage} ${totaltrial}번째 질문으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
     $("#chat-content").append(botHtml);
     $("#chat-content")
       .stop()
       .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     saveLogger["userQuestions"].push(rawText); //사용자 질문 저장
+    //모델 정답 출력
+    var botAnswer = `${botImage} ${rawText}에 대한 답은<br>{boolq 모델의 답} 입니다.</span></p></div></div>`;
+    $("#chat-content").append(botAnswer);
+    $("#chat-content")
+      .stop()
+      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+    saveLogger["botAnswers"].push(rawText); //모델 답 저장
     if (totaltrial == 10) {
       var botFeedbackMessage = `${botImage} 게임이 종료되었습니다! <br>사용자 피드백을 보내시겠습니까?<br>0: 보내지 않는다. 1: 보낸다.`;
       $("#chat-content").append(botFeedbackMessage);
@@ -223,7 +236,7 @@ function saveCsv() {
   document.body.appendChild(link);
   link.click();
 }
-
+//한 문제당 질문 횟수가 5이상이면 힌트 버튼 활성화
 function getHintResponse(problemtrial) {
   if (problemtrial >= 5) {
     document.getElementById("hintButton").disabled = false;
@@ -231,17 +244,17 @@ function getHintResponse(problemtrial) {
     document.getElementById("hintButton").disabled = true;
   }
 }
-
+//전체 질문 횟수를 업데이트 해주는 함수
 function calculateTrial() {
   var t_element = document.getElementById("trialCount");
   t_element.innerText = "전체 질문 횟수 " + totaltrial;
 }
-
+//맞춘 문제 개수를 업데이트 해주는 함수
 function calculateCorrect() {
   var t_element = document.getElementById("correctCount");
   t_element.innerText = "맞힌 갯수 " + correctNum;
 }
-
+//엔터를 입력한 경우 boolq 모델
 $("#textInput").keypress(function (e) {
   if ((e.keyCode == "13") & (dictFlags["feedbackMode"] == 0)) {
     getBotResponse();
@@ -252,19 +265,20 @@ $("#textInput").keypress(function (e) {
     getUserFeedback();
   }
 });
-
+//힌트를 클릭하는 경우 주관식 모델
 $("#hintButton").click(function () {
   getHintResponse(problemtrial);
   var rawText = $("#textInput").val();
   $("#textInput").val("");
   console.log(rawText)
+  //질문이 없는데 힌트 버튼을 누른경우
   if(rawText.length==0){
     var botHtml = `${botImage} 주관식 질문을 입력하세요.<br>`;
     $("#chat-content").append(botHtml);
     $("#chat-content")
       .stop()
       .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
-  }else{
+  }else{//질문이 있으면서 힌트 버튼을 누른경우 주관식 모델
     var userHtml = userImage + rawText + "</span></p></div></div>";
     $("#chat-content").append(userHtml);
     $("#chat-content")
@@ -272,6 +286,11 @@ $("#hintButton").click(function () {
       .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     var botHtml = `${botImage} Hint 질문으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
     $("#chat-content").append(botHtml);
+    $("#chat-content")
+      .stop()
+      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+    var botAnswer = `${botImage} ${rawText}에 대한 답은<br>{주관식 모델의 답} 입니다.</span></p></div></div>`;
+    $("#chat-content").append(botAnswer);
     $("#chat-content")
       .stop()
       .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
