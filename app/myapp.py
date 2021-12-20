@@ -12,7 +12,7 @@ app = Flask(__name__)
 def home(): 
 	return render_template("test.html")
 
-@app.route("/get")
+@app.route("/get_hint")
 async def get_bot_response():
     userText = request.args.get('msg')
     print(userText)
