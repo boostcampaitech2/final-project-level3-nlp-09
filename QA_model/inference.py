@@ -247,4 +247,6 @@ class ExtractivedQAMdoel:
             print(
                 "No metric can be presented because there is no correct answer given. Job done!"
             )
-            return predictions[0]['prediction_text']
+            text = predictions[0]['prediction_text'].replace(self.answer, '[정답]')
+            
+            return text
