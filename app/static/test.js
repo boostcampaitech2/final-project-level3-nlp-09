@@ -48,6 +48,21 @@ function getBotResponse() {
       category = tmp[1];//카테고리
       console.log(answer);
       console.log(category);
+
+      /* TODO: category, answer를 api에게 전달*/
+      $.get("/set_category", { category: category, answer: answer }).done(function(data) {
+        // data: BoolQA model의 response, Extractived-based MRC model의 출력
+        console.log(data)
+        console.log('send category and answer!!')
+      });
+      $.get("/set_category_boolq", { category: category, answer: answer }).done(function(data) {
+        // data: BoolQA model의 response, Extractived-based MRC model의 출력
+        console.log(data)
+        console.log('send category and answer!!')
+      });
+
+
+
       var botStartMessage = `${botImage}****************************************<br>게임을 시작할게!!<br>내가 생각하고 있는 것은 무엇일까?
     ****************************************<br>나는 지금 ${category} 카테고리에서 문제를 골랐어!
       <br><b><u>정답:</u></b> 을 앞에 쓰면 정답을 입력할 수 있어!<br>ex) 정답:쿼터백
@@ -96,6 +111,7 @@ function getBotResponse() {
       .stop()
       .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     //정답인 경우
+    console.log(`정답=${answer}, 입력=${rawText.substring(3, str_len)}`)
     if (rawText.substring(3, str_len) == answer) {
       var tmp = pickQuestion();//답과 카테고리 정함
       answer = tmp[0];//답
@@ -132,36 +148,70 @@ function getBotResponse() {
     }
   } else if (totaltrial < 20) {// boolq 질문을 하는 경우
     //사용자 질문 보여주기
-    var userHtml = userImage + rawText + "</span></p></div></div>";
-    $("#chat-content").append(userHtml);
-    $("#chat-content")
-      .stop()
-      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
-    totaltrial += 1;
-    problemtrial += 1;
-    calculateTrial();
-    console.log(totaltrial);
-    // 모델이 사용자의 어떤 질문을 받았는지 보여주기
-    var botHtml = `${botImage} ${totaltrial}번째 질문으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
-    $("#chat-content").append(botHtml);
-    $("#chat-content")
-      .stop()
-      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
-    saveLogger["userQuestions"].push(rawText); //사용자 질문 저장
-    //모델 정답 출력
-    var botAnswer = `${botImage} ${rawText}에 대한 답은<br>{boolq 모델의 답} 입니다.</span></p></div></div>`;
-    $("#chat-content").append(botAnswer);
-    $("#chat-content")
-      .stop()
-      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
-    saveLogger["botAnswers"].push(rawText); //모델 답 저장
-    if (totaltrial == 20) {
-      var botFeedbackMessage = `${botImage} 게임이 종료되었습니다! <br>사용자 피드백을 보내시겠습니까?<br>0: 보내지 않는다. 1: 보낸다.`;
-      $("#chat-content").append(botFeedbackMessage);
+    $.get("/get_boolq", { msg: rawText }).done(function(data) {
+      console.log(data);
+      // data: BoolQA model의 response, Extractived-based MRC model의 출력
+      var userHtml = userImage + rawText + "</span></p></div></div>";
+      $("#chat-content").append(userHtml);
       $("#chat-content")
         .stop()
         .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
-    }
+      totaltrial += 1;
+      problemtrial += 1;
+      calculateTrial();
+      console.log(totaltrial);
+      // 모델이 사용자의 어떤 질문을 받았는지 보여주기
+      var botHtml = `${botImage} ${totaltrial}번째 질문으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
+      $("#chat-content").append(botHtml);
+      $("#chat-content")
+        .stop()
+        .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+      saveLogger["userQuestions"].push(rawText); //사용자 질문 저장
+      //모델 정답 출력
+      var botAnswer = `${botImage} ${rawText}에 대한 답은<br>${data} 입니다.</span></p></div></div>`;
+      $("#chat-content").append(botAnswer);
+      $("#chat-content")
+        .stop()
+        .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+      saveLogger["botAnswers"].push(rawText); //모델 답 저장
+      if (totaltrial == 20) {
+        var botFeedbackMessage = `${botImage} 게임이 종료되었습니다! <br>사용자 피드백을 보내시겠습니까?<br>0: 보내지 않는다. 1: 보낸다.`;
+        $("#chat-content").append(botFeedbackMessage);
+        $("#chat-content")
+          .stop()
+          .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+      }
+    });
+    // var userHtml = userImage + rawText + "</span></p></div></div>";
+    // $("#chat-content").append(userHtml);
+    // $("#chat-content")
+    //   .stop()
+    //   .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+    // totaltrial += 1;
+    // problemtrial += 1;
+    // calculateTrial();
+    // console.log(totaltrial);
+    // // 모델이 사용자의 어떤 질문을 받았는지 보여주기
+    // var botHtml = `${botImage} ${totaltrial}번째 질문으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
+    // $("#chat-content").append(botHtml);
+    // $("#chat-content")
+    //   .stop()
+    //   .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+    // saveLogger["userQuestions"].push(rawText); //사용자 질문 저장
+    // //모델 정답 출력
+    // var botAnswer = `${botImage} ${rawText}에 대한 답은<br>{boolq 모델의 답} 입니다.</span></p></div></div>`;
+    // $("#chat-content").append(botAnswer);
+    // $("#chat-content")
+    //   .stop()
+    //   .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+    // saveLogger["botAnswers"].push(rawText); //모델 답 저장
+    // if (totaltrial == 20) {
+    //   var botFeedbackMessage = `${botImage} 게임이 종료되었습니다! <br>사용자 피드백을 보내시겠습니까?<br>0: 보내지 않는다. 1: 보낸다.`;
+    //   $("#chat-content").append(botFeedbackMessage);
+    //   $("#chat-content")
+    //     .stop()
+    //     .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+    // }
   } else if ((totaltrial == 20) & (dictFlags["sendFeedback"] == -1)) {
     var userHtml = userImage + rawText + "</span></p></div></div>";
     $("#chat-content").append(userHtml);
@@ -335,35 +385,45 @@ $("#hintButton").click(function () {
       .stop()
       .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
   }else{//질문이 있으면서 힌트 버튼을 누른경우 주관식 모델
-    var userHtml = userImage + rawText + "</span></p></div></div>";
-    $("#chat-content").append(userHtml);
-    $("#chat-content")
-      .stop()
-      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
-    var botHtml = `${botImage} Hint 질문으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
-    $("#chat-content").append(botHtml);
-    $("#chat-content")
-      .stop()
-      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
-    var botAnswer = `${botImage} ${rawText}에 대한 답은<br>{주관식 모델의 답} 입니다.</span></p></div></div>`;
-    $("#chat-content").append(botAnswer);
-    $("#chat-content")
-      .stop()
-      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
-    totaltrial += 1;
-    problemtrial += 1;
+    $.get("/get_hint", { msg: rawText }).done(function(data) {
+      console.log(data);
+      // data: BoolQA model의 response, Extractived-based MRC model의 출력
+      var userHtml = userImage + rawText + "</span></p></div></div>";
+      $("#chat-content").append(userHtml);
+      $("#chat-content")
+        .stop()
+        .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+      var botHtml = `${botImage} Hint 질문으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
+      $("#chat-content").append(botHtml);
+      $("#chat-content")
+        .stop()
+        .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+      var botAnswer = `${botImage} ${rawText}에 대한 답은<br>${data} 입니다.</span></p></div></div>`;
+      $("#chat-content").append(botAnswer);
+      $("#chat-content")
+        .stop()
+        .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+      totaltrial += 1;
+      problemtrial += 1;
+    });
+    // var userHtml = userImage + rawText + "</span></p></div></div>";
+    // $("#chat-content").append(userHtml);
+    // $("#chat-content")
+    //   .stop()
+    //   .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+    // var botHtml = `${botImage} Hint 질문으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
+    // $("#chat-content").append(botHtml);
+    // $("#chat-content")
+    //   .stop()
+    //   .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+    // var botAnswer = `${botImage} ${rawText}에 대한 답은<br>{주관식 모델의 답} 입니다.</span></p></div></div>`;
+    // $("#chat-content").append(botAnswer);
+    // $("#chat-content")
+    //   .stop()
+    //   .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+    // totaltrial += 1;
+    // problemtrial += 1;
   }
-  // $.get("/get_hint", { msg: rawText }).done(function(data) {
-  //   // data: BoolQA model의 response, Extractived-based MRC model의 출력
-  //   var botHtml = `${botImage} Hint<br>${data}를 사용했습니다.</span></p></div></div>`;
-  //   $("#chat-content").append(botHtml);
-  //   $("#chat-content")
-  //     .stop()
-  //     .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
-  //   document
-  //     .getElementById("userInput")
-  //     .scrollIntoView({ block: "start", behavior: "smooth" });
-  // });
   calculateTrial();
   getHintResponse(problemtrial);
 });

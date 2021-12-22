@@ -3,7 +3,7 @@ from flask import Flask, render_template, request
 # from transformers import AutoModel, AutoConfig, AutoTokenizer, GPT2LMHeadModel, GPT2Tokenizer
 import requests
 
-import aiohttp
+import aiohttp, json
 import asyncio
 
 
@@ -11,6 +11,30 @@ app = Flask(__name__)
 @app.route("/")
 def home(): 
 	return render_template("test.html")
+
+@app.route("/set_category_boolq")
+async def set_category():
+    category = request.args.get('category')
+    answer = request.args.get('answer')
+    print(f'category={category}, answer={answer}')
+    data = {'category': category, 'context_name': answer}
+
+    async with aiohttp.ClientSession() as session:
+        url = 'http://14.49.45.218:9091/set_category_boolq'
+        async with session.post(url, json=data) as resp:
+            return ((await resp.json())['result'])
+
+@app.route("/set_category")
+async def set_category_boolq():
+    category = request.args.get('category')
+    answer = request.args.get('answer')
+    print(f'category={category}, answer={answer}')
+    data = {'category': category, 'context_name': answer}
+
+    async with aiohttp.ClientSession() as session:
+        url = 'http://14.49.45.218:9090/set_category'
+        async with session.post(url, json=data) as resp:
+            return ((await resp.json())['result'])
 
 @app.route("/get_hint")
 async def get_bot_response():
@@ -22,8 +46,15 @@ async def get_bot_response():
         async with session.post(url, json=data) as resp:
             return ((await resp.json())['result'])
 
+@app.route("/get_boolq")
+async def get_boolqa_bot_response():
+    userText = request.args.get('msg')
+    print(userText)
+    data = {'data':userText}
+    async with aiohttp.ClientSession() as session:
+        url = 'http://0.0.0.0:9091/chat_boolq'
+        async with session.post(url, json=data) as resp:
+            return ((await resp.json())['result'])
+
 if __name__ == "__main__":
-    # model_name= 'gpt2'
-    # tokenizer= GPT2Tokenizer.from_pretrained(model_name)
-    # model= GPT2LMHeadModel.from_pretrained(model_name, pad_token_id=tokenizer.eos_token_id)
-    app.run(host='127.0.0.1', port=5000)
+    app.run(host='0.0.0.0', port=5000)

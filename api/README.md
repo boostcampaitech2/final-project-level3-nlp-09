@@ -2,6 +2,7 @@
 ## Boolean QA Api Server
 ### Demo
 ```sh
+cd
 uvicorn main:app --host 0.0.0.0 --port 9091
 ```
 ### API
@@ -46,7 +47,7 @@ uvicorn main:app --host 0.0.0.0 --port 9090
 #     'category': str, 
 #     'context_name': str, 
 # }
-0.0.0.0:9090/get_category
+0.0.0.0:9090/set_category
 
 # /chat
 # Request json by POST
@@ -59,7 +60,7 @@ uvicorn main:app --host 0.0.0.0 --port 9090
 ### Testing
 ```sh
 # Set Context
-$ curl "http://0.0.0.0/set_category" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"category\":\"mbti\", \"context_name\":\"ESFJ\"}"
+$ curl "http://0.0.0.0:9090/set_category" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"category\":\"mbti\", \"context_name\":\"ESFJ\"}"
 
 # Set Question
 # 정답 마스킹 전에 모델이 제대로 돌아가는지 확인할 수 있는 가장 좋은 질문
