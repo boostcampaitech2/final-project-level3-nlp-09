@@ -157,3 +157,5 @@ wandb/
 **/checkpoint-28500/
 **/*cookie*
 model.zip
+api/**/data
+api/**/QA_model

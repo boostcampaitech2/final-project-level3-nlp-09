@@ -33,7 +33,7 @@ from transformers import (
 from QA_model.utils_qa import postprocess_qa_predictions_inf, check_no_error
 from QA_model.trainer_qa import QuestionAnsweringTrainer
 
-from QA_model.random_context import get_random_context
+from QA_model.random_context import get_context
 
 class ModelArguments:
     def __init__(self):
@@ -88,10 +88,18 @@ class ExtractivedQAMdoel:
             from_tf=bool(".ckpt" in self.model_args.model_name_or_path),
             config=config,
         )
+        self.trainer = None
 
-    def set_context(self):
-        self.category, self.context, self.answer = get_random_context(self.dataset_path)
-        return self.category, self.context, self.answer
+        self.set_context('행성', '금성')
+        self.set_question('이것의 위치는?')
+        self.prepare_dataset()
+        self.run_mrc()
+
+    def set_context(self, category, context_name):
+        self.context = get_context(self.dataset_path, category, context_name)
+        self.category = category
+        self.answer = context_name
+        return self.context
 
     def set_question(self, question):
         self.question = question
@@ -108,11 +116,15 @@ class ExtractivedQAMdoel:
             }
         )
         self.datasets = DatasetDict({'validation' : Dataset.from_pandas(df, features=f)})
-        
-    def run_mrc(self):
-        return self._run_mrc(self.data_args, self.training_args, self.model_args, 
-            self.datasets, self.tokenizer, self.model)
 
+    def run_mrc(self):
+        return self._run_mrc(self.data_args,
+            self.training_args,
+            self.model_args,
+            self.datasets,
+            self.tokenizer,
+            self.model
+        )
 
     def _run_mrc(
         self,
@@ -218,28 +230,29 @@ class ExtractivedQAMdoel:
             if training_args.do_predict:
                 return formatted_predictions
 
-        metric = load_metric("squad")
 
+        metric = load_metric("squad")
         def compute_metrics(p: EvalPrediction) -> Dict:
             return metric.compute(predictions=p.predictions, references=p.label_ids)
 
         print("init trainer...")
-        # Trainer 초기화
-        trainer = QuestionAnsweringTrainer(
-            model=model,
-            args=training_args,
-            train_dataset=None,
-            eval_dataset=eval_dataset,
-            eval_examples=datasets["validation"],
-            tokenizer=tokenizer,
-            data_collator=data_collator,
-            post_process_function=post_processing_function,
-            compute_metrics=compute_metrics,
-        )
+        if self.trainer is None:
+            # Trainer 초기화
+            self.trainer = QuestionAnsweringTrainer(
+                model=model,
+                args=training_args,
+                train_dataset=None,
+                eval_dataset=eval_dataset,
+                eval_examples=datasets["validation"],
+                tokenizer=tokenizer,
+                data_collator=data_collator,
+                post_process_function=post_processing_function,
+                compute_metrics=compute_metrics,
+            )
 
         #### eval dataset & eval example - predictions.json 생성됨
         if training_args.do_predict:
-            predictions = trainer.predict(
+            predictions = self.trainer.predict(
                 test_dataset=eval_dataset, test_examples=datasets["validation"]
             )
             print(predictions)
