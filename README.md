@@ -14,6 +14,13 @@ pip install -r requiremnets
 # API server
 [API document](api/README.md)
 
+## Demo
+```sh
+# Boolean QA Model
+./bm-demo.sh
+# Extraction-based QA Model
+./em-demo.sh
+```
 ## Build
 ```
 $ sudo ./build.sh
@@ -24,19 +31,7 @@ $ docker-compose up -d --build rabbitmq app
 ```sh
 python train.py 
 ```
-## Convert Pytorch to ONNX(cuda env)
-```sh
-$ cd app
-$ python convert_graph_to_onnx.py --pipeline question-answering --framework pt --model ./model/checkpoint-28500  --quantize ./model/onnx/KLRL-QA.onnx
-```
 
-## Convert ONNX to TensorRT(cuda env)
-```sh
-$ chmod +x trtexec_build.sh
-$ ./trtexec_build.sh
-```
-inference를 하고 싶다면.. `inference.py` 의 argument를 확인하고 실행
-(이 때 사용하고 싶은 모델을 save_model 폴더에서 찾아 argument로 입력해줘야함.)
 
 ```python
 python inference.py
