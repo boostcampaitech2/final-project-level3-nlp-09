@@ -1,0 +1,57 @@
+version: '3'
+
+services:
+  onnx:
+    build:
+      context: ./QA_model
+      dockerfile: ./Dockerfile
+    stdin_open: true # docker run -i
+    tty: true # docker run -t
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+        - 5672:5672
+        - 15672:15672
+    environment: 
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASSWORD=guest
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+  api:
+    build:
+      context: ./api
+      dockerfile: ./Dockerfile
+    ports:
+      - 9090:9090
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      QUEUE_NAME: CHAT-PROCESS
+      RESULT_SUFFIX: _result
+      ACCESS_TOKEN: TOKEN_FOR_DIRECT_UPLOAD
+      UPLOAD_PATH: ./files
+      REDIS_STORE_DB_INDEX: 0
+      RABBITMQ_HOST: 127.0.0.1
+      RABBITMQ_USERNAME: guest  
+      RABBITMQ_PASSWORD: guest
+      RABBITMQ_PORT: 5672
+    restart: unless-stopped
+    depends_on:
+      - rabbitmq
+  app:
+    command: nvidia-smi
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    build:
+      context: ./app
+      dockerfile: ./Dockerfile
+    restart: unless-stopped
+    ports:
+      - 5000:5000
