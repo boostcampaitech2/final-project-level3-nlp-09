@@ -56,6 +56,23 @@ function getBotResponse() {
       $("#chat-content")
         .stop()
         .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+    } else if(rawText==2){//게임 방법 설명 칸
+      var botStartMessage = `${botImage}입력 칸에 질문을 입력하고<br> 엔터를 누르면 O,X 질문을 할 수 있어!<br>한 문제에서 5번 이상 틀리면 Hint를 쓸 수 있어!<br>
+        Hint는 입력 칸에 주관식 질문을 쓰고 Hint 버튼을 눌러!<br>정답을 입력할 때는 정답:떡볶이 이런 형태로 입력해!
+        </span></p></div></div>`;
+      $("#chat-content").append(botStartMessage);
+      $("#chat-content")
+        .stop()
+        .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+      var botMes = `${botImage}<span>ㅎㅇ! 나는 Q100의 QBot이야.<br /></span>
+                      <span>한 문제에서 5번 이상 틀리면 Hint를 사용할 수 있어!<br /></span>
+                      <span>게임 시작을 원하면 1을 입력해!</span><br />
+                      <span>게임 방법이 궁금하면 2를 입력해!</span></p></div></div>`;
+      $("#chat-content").append(botMes);
+      $("#chat-content")
+        .stop()
+        .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+
     } else {//게임 시작을 올바르게 하지 않은 경우
       var botHtml = botImage + "게임을 시작하려면 1을 입력해주세요." + "</span></p></div></div>";
       $("#chat-content").append(botHtml);
@@ -104,9 +121,16 @@ function getBotResponse() {
         .stop()
         .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
       totaltrial += 1;
+      problemtrial += 1;
       calculateTrial();
+    }if (totaltrial == 20) {
+      var botFeedbackMessage = `${botImage} 게임이 종료되었습니다! <br>사용자 피드백을 보내시겠습니까?<br>0: 보내지 않는다. 1: 보낸다.`;
+      $("#chat-content").append(botFeedbackMessage);
+      $("#chat-content")
+        .stop()
+        .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     }
-  } else if (totaltrial < 10) {// boolq 질문을 하는 경우
+  } else if (totaltrial < 20) {// boolq 질문을 하는 경우
     //사용자 질문 보여주기
     var userHtml = userImage + rawText + "</span></p></div></div>";
     $("#chat-content").append(userHtml);
@@ -131,14 +155,14 @@ function getBotResponse() {
       .stop()
       .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     saveLogger["botAnswers"].push(rawText); //모델 답 저장
-    if (totaltrial == 10) {
+    if (totaltrial == 20) {
       var botFeedbackMessage = `${botImage} 게임이 종료되었습니다! <br>사용자 피드백을 보내시겠습니까?<br>0: 보내지 않는다. 1: 보낸다.`;
       $("#chat-content").append(botFeedbackMessage);
       $("#chat-content")
         .stop()
         .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     }
-  } else if ((totaltrial == 10) & (dictFlags["sendFeedback"] == -1)) {
+  } else if ((totaltrial == 20) & (dictFlags["sendFeedback"] == -1)) {
     var userHtml = userImage + rawText + "</span></p></div></div>";
     $("#chat-content").append(userHtml);
     $("#chat-content")
