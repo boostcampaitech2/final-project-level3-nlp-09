@@ -1,41 +1,21 @@
 import json, random, time, os
 
-def get_random_context(dataset_path: str):
+def get_context(dataset_path: str, category: str, context_name: str):
     """
     dataset_path: 스무고개 질문지가 담긴 directory 이름
     return: 
         category, context, answer
     """
     assert os.path.isdir(dataset_path)
-    random.seed(time.time())
+    assert os.path.isdir(os.path.join(dataset_path, category))
+    assert os.path.exists(os.path.join(dataset_path, category, context_name + '.txt'))
 
-    category_candidates= []
-
-    # Append candidates of category
-    with os.scandir(dataset_path) as entries:
-        for entry in entries:
-            if entry.is_dir():
-                category_candidates.append(entry)
-
-    # Select category
-    path = random.choice(category_candidates)
-    category = path.name
-
-    candidates = []
-    # Append candidates of contexts
-    with os.scandir(path) as entries:
-        for entry in entries:
-            if entry.name.endswith('txt') and entry.is_file():
-                candidates.append(entry)
-
-    # Select context!
-    target = random.choice(candidates)
-    with open(target.path, 'r', encoding='utf-8') as file:
+    target_path = os.path.join(dataset_path, category, context_name + '.txt')
+    with open(target_path, 'r', encoding='utf-8') as file:
         contexts = file.readlines()
 
     context = ' '.join(contexts)
-    answer = target.name[:-4]
-    return category, context, answer
+    return context
 
 def get_random_context_text_json(dataset_name):
     """
