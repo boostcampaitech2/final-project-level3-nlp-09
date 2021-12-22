@@ -31,4 +31,11 @@ $ curl "http://14.49.45.218:9090/set_category"
 # Set Question
 # 정답 마스킹 전에 모델이 제대로 돌아가는지 확인할 수 있는 가장 좋은 질문
 $ curl -X POST "http://14.49.45.218:9090/chat" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"data\":\"이것의 이름은 무엇인가요?\"}"
+
+# Set BoolQ Context
+$ curl "http://220.149.235.233:9090/set_category_boolq"
+
+$ curl -X POST "http://220.149.235.233:9090/chat_boolq" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"data\":\"이것은 라면인가요?\"}
+
 ```
+
