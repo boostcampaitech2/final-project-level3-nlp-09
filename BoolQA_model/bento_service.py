@@ -97,12 +97,13 @@ class APIService(BentoService):
 if __name__ == "__main__":
     bento_svc= APIService()
 
-    model_name= 'klue/roberta-large'
+    model_name= 'rockmiin/ko-boolq-model'
 
     config= AutoConfig.from_pretrained(model_name)
     config.num_labels= 3
     model= AutoModelForSequenceClassification.from_pretrained(model_name)
     tokenizer= AutoTokenizer.from_pretrained(model_name)
+
     bento_svc.pack('model', model)
     bento_svc.pack('tokenizer', tokenizer)
 
