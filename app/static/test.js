@@ -164,14 +164,14 @@ function getBotResponse() {
       problemtrial += 1;
       calculateTrial();
     }
-    if (totaltrial == 10) {
+    if (totaltrial == 20) {
       var botFeedbackMessage = `${botImage} 게임이 종료되었습니다! <br>사용자 피드백을 보내시겠습니까?<br>0: 보내지 않는다. 1: 보낸다.`;
       $("#chat-content").append(botFeedbackMessage);
       $("#chat-content")
         .stop()
         .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     }
-  } else if (totaltrial < 10) {
+  } else if (totaltrial < 20) {
     // boolq 질문을 하는 경우
     //사용자 질문 보여주기
     $.get("/get_boolq", { msg: rawText }).done(function (data) {
@@ -200,7 +200,7 @@ function getBotResponse() {
         saveLogger["answer_keyword"].push(answer); // 실제 답 저장
       }
 
-      if (totaltrial == 10) {
+      if (totaltrial == 20) {
         var botFeedbackMessage = `${botImage} 게임이 종료되었습니다! <br>사용자 피드백을 보내시겠습니까?<br>0: 보내지 않는다. 1: 보낸다.`;
         $("#chat-content").append(botFeedbackMessage);
         $("#chat-content")
@@ -208,7 +208,7 @@ function getBotResponse() {
           .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
       }
     });
-  } else if ((totaltrial == 10) & (dictFlags["sendFeedback"] == -1)) {
+  } else if ((totaltrial == 20) & (dictFlags["sendFeedback"] == -1)) {
     var userHtml = userImage + rawText + "</span></p></div></div>";
     $("#chat-content").append(userHtml);
     $("#chat-content")
@@ -414,7 +414,7 @@ $("#hintButton").click(function () {
         .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
       totaltrial += 1;
       problemtrial += 1;
-      if (totaltrial == 10) {
+      if (totaltrial == 20) {
         var botFeedbackMessage = `${botImage} 게임이 종료되었습니다! <br>사용자 피드백을 보내시겠습니까?<br>0: 보내지 않는다. 1: 보낸다.`;
         $("#chat-content").append(botFeedbackMessage);
         $("#chat-content")
