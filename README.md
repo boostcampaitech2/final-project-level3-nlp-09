@@ -24,7 +24,7 @@ pip install -r requiremnets
 ## Build
 ```
 $ sudo ./build.sh
-$ docker-compose up -d --build rabbitmq app
+$ docker-compose up -d --build app
 ```
 # Model
 ## Train
