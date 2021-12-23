@@ -105,11 +105,11 @@ function getBotResponse() {
       .stop()
       .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     //정답으로 입력한 값 보여주기
-    var botHtml = `${botImage} 정답으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
-    $("#chat-content").append(botHtml);
-    $("#chat-content")
-      .stop()
-      .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+    //var botHtml = `${botImage} 정답으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
+    //$("#chat-content").append(botHtml);
+    //$("#chat-content")
+    //  .stop()
+    //  .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
     //정답인 경우
     console.log(`정답=${answer}, 입력=${rawText.substring(3, str_len)}`)
     if (rawText.substring(3, str_len) == answer) {
@@ -161,11 +161,11 @@ function getBotResponse() {
       calculateTrial();
       console.log(totaltrial);
       // 모델이 사용자의 어떤 질문을 받았는지 보여주기
-      var botHtml = `${botImage} ${totaltrial}번째 질문으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
-      $("#chat-content").append(botHtml);
-      $("#chat-content")
-        .stop()
-        .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
+      //var botHtml = `${botImage} ${totaltrial}번째 질문으로<br>${rawText}를 입력하셨습니다.</span></p></div></div>`;
+      //$("#chat-content").append(botHtml);
+      //$("#chat-content")
+      //  .stop()
+      //  .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
       saveLogger["userQuestions"].push(rawText); //사용자 질문 저장
       //모델 정답 출력
       var botAnswer = `${botImage} ${rawText}에 대한 답은<br>${data} 입니다.</span></p></div></div>`;
