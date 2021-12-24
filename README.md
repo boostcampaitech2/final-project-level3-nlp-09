@@ -58,7 +58,11 @@ $ pip install -r QA_model/requiremnets.txt
 ```sh
 $ python 
 ```
+## Train Extraction-based model
+```sh
+$ python train.py
+```
 ## Infrenece testing of Extraction-based model
 ```sh
-$ python test_inference.py
+$ python test_extraction_qa_inference.py
 ```
