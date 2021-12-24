@@ -11,6 +11,7 @@
 ## Extraction-based MRC model
 ![](img/Reader.png)
 - Get Answer of Question extracted from context
+- Huggingface model hub : https://huggingface.co/NaDy/ko-mrc-model<https://huggingface.co/NaDy/ko-mrc-model>
 
 
 ## BoolQA Model
