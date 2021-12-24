@@ -1,6 +1,10 @@
 # Twenty-Questions Game
 
 # Model Overview
+- Extraction-based MRC model
+  ![](img/Reader.png)
+  - Get Answer of Question extracted from context
+
 # Product Overview
 ![](img/Project-Overview.jpg)
 - API Product
