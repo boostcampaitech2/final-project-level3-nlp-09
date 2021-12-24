@@ -10,12 +10,19 @@
 ## Extraction-based MRC model
 ![](img/Reader.png)
 - Get Answer of Question extracted from context
+- Huggingface model hub : https://huggingface.co/NaDy/ko-mrc-model
 
 
 ## BoolQA Model
-- 
+![boolq_model](./img/boolq_model.png)
+
+- Get 3 Answer ( "YES" : 1, "NO" : 0, "NO ANSWER" : 2) 
+- Huggingface model hub : https://huggingface.co/rockmiin
+
+## 
 
 # Product Overview
+
 ![](img/Project-Overview.jpg)
 - API Product
   - Dockerizing two API server.
@@ -80,3 +87,24 @@ $ python train.py
 ```sh
 $ python test_extraction_qa_inference.py
 ```
+
+# Reference
+
+## Model
+
+•[BoolQ](https://arxiv.org/abs/1905.10044)[: Exploring the Surprising Difficulty of Natural Yes/No Questions](https://arxiv.org/abs/1905.10044)(Clark et al., 2019)
+
+•[klue](https://huggingface.co/klue/roberta-large)[/](https://huggingface.co/klue/roberta-large)[roberta](https://huggingface.co/klue/roberta-large)[-large](https://huggingface.co/klue/roberta-large)
+
+
+
+## Software
+
+Web Frameworks
+
+- [Bootstrap](https://getbootstrap.com/)
+
+- [jQuery](https://jquery.com/)
+
+- [FastAPI](https://github.com/tiangolo/fastapi)
+
