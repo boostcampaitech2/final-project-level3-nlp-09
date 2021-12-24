@@ -414,6 +414,8 @@ $("#hintButton").click(function () {
         .animate({ scrollTop: $("#chat-content")[0].scrollHeight }, 1000);
       totaltrial += 1;
       problemtrial += 1;
+      calculateTrial();
+      getHintResponse(problemtrial);
       if (totaltrial == 20) {
         var botFeedbackMessage = `${botImage} 게임이 종료되었습니다! <br>사용자 피드백을 보내시겠습니까?<br>0: 보내지 않는다. 1: 보낸다.`;
         $("#chat-content").append(botFeedbackMessage);
@@ -423,6 +425,4 @@ $("#hintButton").click(function () {
       }
     });
   }
-  calculateTrial();
-  getHintResponse(problemtrial);
 });
