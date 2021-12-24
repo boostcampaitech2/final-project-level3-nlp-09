@@ -1,12 +1,24 @@
-# twenty-questions
-# Env Setting
-## Train, Inference env
-```sh
-pip install -r requiremnets
-```
+# Twenty-Questions Game
 
+# Model Overview
+# Product Overview
+![](img/Project-Overview.jpg)
+- API Product
+  - Dockerizing two API server.
+  - Provide differenet CUDA environments for two model.
+- Web Product
+  - Dockerizing flask web server.
+  - Asynchronous connection for two API server.
+- CI/CD
+  - Airflow
+    - Retrain Boolean QA Model.
+    - Evaluate retrained model.
+    - Upload model to Huggingface Hub.
+  - Github Action
+    - Build docker image of API product
+    - Execute Github Runner to deploy new docker image.
 ---
-## Airflow
+# Airflow
 
 [Airflow documnet](airflow/README.md)
 
@@ -14,35 +26,39 @@ pip install -r requiremnets
 # API server
 [API document](api/README.md)
 
-## Demo
+## API Demo
 ```sh
-# Boolean QA Model
-./bm-demo.sh
-# Extraction-based QA Model
-./em-demo.sh
+# Boolean QA Model Demo
+$ ./bm-demo.sh
+# Extraction-based QA Model Demo
+$ ./em-demo.sh
 ```
-## Build
+## API Docker Build
 ```
 $ sudo ./build.sh
-$ docker-compose up -d --build app
+```
+# Front-end
+## Front-end Demo
+```sh
+$ cd app
+$ pip install -r requirements.txt
+$ python myapp.py
+```
+## Front-end Docker Build
+```sh
+$ sudo docker-compose up -d --build app
 ```
 # Model
-## Train
+## Train, Inference environments
 ```sh
-python train.py 
+$ pip install -r BoolQA_model/requiremnets.txt
+$ pip install -r QA_model/requiremnets.txt
 ```
-
-
-```python
-python inference.py
-```
-
-
-
-
-# pt file link
-[구글 드라이브](https://drive.google.com/drive/folders/1zXe4xHqX7kxOZIVjb73NW0rCZ3G7uUAX?usp=sharing)
-
+## Infrenece testing of Boolean QA model
 ```sh
-wget --load-cookies ~/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies ~/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1ThqTAgV0NSiEhY0MzFF3XWbvvbzTdyiI' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1ThqTAgV0NSiEhY0MzFF3XWbvvbzTdyiI" -O model.zip && rm -rf ~/cookies.txt
+$ python 
+```
+## Infrenece testing of Extraction-based model
+```sh
+$ python test_inference.py
 ```
