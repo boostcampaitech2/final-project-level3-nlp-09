@@ -1,10 +1,16 @@
 # Twenty-Questions Game
 
-## 🙋‍♂️팀원 소개
+## 팀원 소개
 |김다영|김다인|박성호 **(PM)**|박재형|서동건|정민지|최석민|
 | :---: | :---: | :---: | :---: | :---: | :---: | :---:|
 | <a href="https://github.com/keemdy" height="5" width="10" target="_blank"><img src="https://avatars.githubusercontent.com/u/68893924?v=4" width="80%" height="80%"> | <a href="https://github.com/danny980521" height="5" width="10" target="_blank"><img src="https://avatars.githubusercontent.com/u/77524474?v=4" width="80%" height="80%">| <a href="https://github.com/naem1023" height="5" width="10" target="_blank"><img src="https://avatars.githubusercontent.com/u/11407756?v=4" width="80%" height="80%"> | <a href="https://github.com/Jay-Ppark" height="5" width="10" target="_blank"><img src="https://avatars.githubusercontent.com/u/29303223?v=4" width="80%" height="80%">|  <a href="https://github.com/donggunseo" height="5" width="10" target="_blank"><img src="https://avatars.githubusercontent.com/u/43330160?v=4" width="80%" height="80%">|<a href="https://github.com/minji-o-j" height="5" width="10" target="_blank"><img src="https://avatars.githubusercontent.com/u/45448731?v=4" width="80%" height="80%">| <a href="https://github.com/RockMiin" height="5" width="10" target="_blank"><img src="https://avatars.githubusercontent.com/u/52374789?v=4" width="80%" height="80%">|
 |Data, Serving|Data, MLOps|Data, MLOps, Serving|Data,<br>Front-End|Data, Modeling|Data, MLOps, Serving|Data, Modeling, MLOps|
+
+  
+---
+# Project Flow
+![](img/project%20flow.drawio.png)
+---
 # Model Overview
 
 ## Extraction-based MRC model
@@ -19,8 +25,7 @@
 - Get 3 Answer ( "YES" : 1, "NO" : 0, "NO ANSWER" : 2) 
 - Huggingface model hub : https://huggingface.co/rockmiin
 
-## 
-
+---
 # Product Overview
 
 ![](img/Project-Overview.jpg)
