@@ -1,8 +1,14 @@
+__pycache__/
+models/
+outputs/
+wandb/
+*.ipynb
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 
+.idea/
 # C extensions
 *.so
 
@@ -136,3 +142,20 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+api/model
+__pycache__/
+models/
+outputs/
+wandb/
+**/model/onnx/
+**/model/onnx_cuda/
+*.pt
+*.pth
+*.onnx
+**/export/
+**/checkpoint-28500/
+**/*cookie*
+model.zip
+api/**/data
+api/**/QA_model
