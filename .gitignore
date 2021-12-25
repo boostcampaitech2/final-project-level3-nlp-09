@@ -159,3 +159,4 @@ wandb/
 model.zip
 api/**/data
 api/**/QA_model
+hf_key.txt
