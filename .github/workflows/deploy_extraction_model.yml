@@ -2,8 +2,10 @@ name: DEV CI
 
 on:
   push:
-    branches:
-      - dev
+    branches: [ main ]
+    paths:
+      - 'QA_model/**'
+      - 'api/extraction-mrc/**'
 env:
   DOCKER_IMAGE: ghcr.io/keemdy/final-project-level3-nlp-09
   VERSION: ${{ github.sha }}
@@ -37,7 +39,7 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: ./
-          file: ./api/Dockerfile
+          file: ./api/extraction-mrc/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
 #           tags: ${{ env.DOCKER_IMAGE }}
