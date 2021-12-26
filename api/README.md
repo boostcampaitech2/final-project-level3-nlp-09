@@ -1,26 +1,70 @@
-# Image api server
-
-### Upload and register task to worker
+# API Server
+## Boolean QA Api Server
+### Demo
+```sh
+uvicorn main:app --host 0.0.0.0 --port 9091
 ```
-$ /usr/bin/curl -X POST "http://172.28.181.196:8080/chat" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"data\":\"hihi\"}"
-$ curl -X POST 127.0.0.1:8080/chat -d '{"data":"안녕하세요"}'
+### API
+```sh
+# /get_category
+# Request by GET
+# Requst: None
+# Return: {
+#     'category': str, 
+#     'context_name': str, 
+# }
+0.0.0.0:9091/set_category_boolq
 
-# Response:
-# { files: [ {'original': 'README.md', 'stored': 'XXXX.md'} ] }
+# /chat
+# Request json by POST
+# Request: {"data": "Any quesiton you want"}
+# Return: {
+#     'result': str
+# }
+0.0.0.0:9091/chat
+```
+### Testing
+```sh
+# Set Context
+$ curl -X POST "http://0.0.0.0:9091/set_category_boolq" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"category\":\"행성\", \"context_name\":\"금성\"}"
+
+# Set Question
+$ curl -X POST "http://0.0.0.0:9091/chat_boolq" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"data\":\"이것은 행성인가요?\"}"
 ```
 
-### Upload and register task to worker
+## Extractived-based MRC Api Server
+### Demo
+```sh
+uvicorn main:app --host 0.0.0.0 --port 9090
 ```
-$ curl 127.0.0.1:8080/files -F "files=@./README.md"
+### API
+```sh
+# /get_category
+# Request by GET
+# Requst: None
+# Return: {
+#     'category': str, 
+#     'context_name': str, 
+# }
+0.0.0.0:9090/set_category
 
-# Response:
-# { files: [ {'original': 'README.md', 'stored': 'XXXX.md'} ] }
+# /chat
+# Request json by POST
+# Request: {"data": "Any quesiton you want"}
+# Return: {
+#     'result': str
+# }
+0.0.0.0:9090/chat
+```
+### Testing
+```sh
+# Set Context
+$ curl "http://0.0.0.0:9090/set_category" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"category\":\"mbti\", \"context_name\":\"ESFJ\"}"
+
+# Set Question
+# 정답 마스킹 전에 모델이 제대로 돌아가는지 확인할 수 있는 가장 좋은 질문
+$ curl -X POST "http://0.0.0.0:9090/chat" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"data\":\"이것은 어떤 성격인가요??\"}"
 ```
 
-### Get result of processed by worker
-```
-$ curl 127.0.0.1:8080/files/XXXX.md/:result
 
-# Response: (Result file uploaded by worker)
-# XXXXXX
-```
+
