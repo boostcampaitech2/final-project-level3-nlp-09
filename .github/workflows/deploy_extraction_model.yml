@@ -1,4 +1,4 @@
-name: DEV CI
+name: Extraction model Build and Deploy
 
 on:
   push:
