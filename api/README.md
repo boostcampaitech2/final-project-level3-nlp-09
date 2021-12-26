@@ -2,7 +2,6 @@
 ## Boolean QA Api Server
 ### Demo
 ```sh
-cd
 uvicorn main:app --host 0.0.0.0 --port 9091
 ```
 ### API
