@@ -1,4 +1,4 @@
-name: BoolQA model Build and Deploy
+name: App Build and Deploy
 
 on:
   push:
