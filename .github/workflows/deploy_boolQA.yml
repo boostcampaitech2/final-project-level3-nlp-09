@@ -59,7 +59,7 @@ jobs:
           pwd
           docker ps -a
           docker ps -q --filter "name=bool" | grep -q . && docker stop bool && docker rm -fv bool
-          docker run --gpus all -d -p 9090:9090 --name bool --restart always ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
+          docker run --gpus all -d -p 9092:9092 --name bool --restart always ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
   cleanup:
     needs: [ build, deploy ]
     name: Clean up docker images
