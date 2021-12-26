@@ -25,7 +25,7 @@ async def set_category():
             return ((await resp.json())['result'])
 
 @app.route("/set_category")
-async def set_category_boolq():
+async def set_category_ex():
     category = request.args.get('category')
     answer = request.args.get('answer')
     print(f'category={category}, answer={answer}')

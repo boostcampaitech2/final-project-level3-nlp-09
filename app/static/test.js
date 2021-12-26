@@ -141,6 +141,19 @@ function getBotResponse() {
       category = tmp[1]; //카테고리
       console.log(answer);
       console.log(category);
+
+      /* TODO: category, answer를 api에게 전달*/
+      $.get("/set_category", { category: category, answer: answer }).done(function (data) {
+        // data: BoolQA model의 response, Extractived-based MRC model의 출력
+        console.log(data);
+        console.log("send category and answer!!");
+      });
+      $.get("/set_category_boolq", { category: category, answer: answer }).done(function (data) {
+        // data: BoolQA model의 response, Extractived-based MRC model의 출력
+        console.log(data);
+        console.log("send category and answer!!");
+      });
+
       var botAnswerMessage = `${botImage}****************************************<br>정답입니다!!<br>
       <b><u>${category}</u></b> 카테고리에서 새로운 문제를 출제했으니 다시 맞춰봐!</span></p></div></div>`;
       $("#chat-content").append(botAnswerMessage);
