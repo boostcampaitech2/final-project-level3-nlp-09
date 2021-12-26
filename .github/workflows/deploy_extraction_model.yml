@@ -59,8 +59,8 @@ jobs:
         run: |
           pwd
           docker ps -a
-          docker ps -q --filter "name=last" | grep -q . && docker stop last && docker rm -fv last
-          docker run --gpus all -d -p 9090:9090 --name last --restart always ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
+          docker ps -q --filter "name=extraction" | grep -q . && docker stop extraction && docker rm -fv extraction
+          docker run --gpus all -d -p 9090:9090 --name extraction --restart always ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
   cleanup:
     needs: [ build, deploy ]
     name: Clean up docker images
