@@ -1,9 +1,10 @@
-name: DEV CI
+name: BoolQA model Build and Deploy
 
 on:
   push:
-    branches:
-      - dev
+    branches: [ main ]
+    paths:
+      - 'api/bool-qa/**'
 env:
   DOCKER_IMAGE: ghcr.io/keemdy/final-project-level3-nlp-09
   VERSION: ${{ github.sha }}
@@ -36,8 +37,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
-          context: ./
-          file: ./api/Dockerfile
+          context: ./api
+          file: ./api/bool-qa/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
 #           tags: ${{ env.DOCKER_IMAGE }}
@@ -57,8 +58,8 @@ jobs:
         run: |
           pwd
           docker ps -a
-          docker ps -q --filter "name=last" | grep -q . && docker stop last && docker rm -fv last
-          docker run --gpus all -d -p 9090:9090 --name last --restart always ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
+          docker ps -q --filter "name=bool" | grep -q . && docker stop bool && docker rm -fv bool
+          docker run --gpus all -d -p 9091:9091 --name bool --restart always ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
   cleanup:
     needs: [ build, deploy ]
     name: Clean up docker images
