@@ -3,7 +3,7 @@ FROM nvcr.io/nvidia/pytorch:21.11-py3
 # RUN nvidia-smi
 
 # ENV API_SERVER_TESTING TESTING
-ADD ./api/bool-qa /bool-qa
+ADD ./bool-qa /bool-qa
 # RUN ls -l /work
 
 RUN pip3 install -r /bool-qa/requirements.txt --no-cache-dir
