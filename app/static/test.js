@@ -271,7 +271,7 @@ function getUserFeedback() {
 
   if (i == saveLogger["userQuestions"].length + 1) {
     //종료조건
-    //사용자 피드백 파일로 생성
+    //사용자 피드백 전송
     saveCsv();
 
     //종료 문구 띄우기
@@ -290,7 +290,7 @@ function getUserFeedback() {
     }
     // 질문할 경우
     var botMessage = `${botImage}
-    ***********************************<br>정답: ${saveLogger["answer_keyword"][i]}<br>
+    ***********************************<br>정답: ${saveLogger["answer_keyword"][i - 1]}<br>
     ***********************************<br>${i}번째 사용자 O/X질문:<br>
     ${saveLogger["userQuestions"][i - 1]}<br>
     ***********************************<br>답변: ${ox}<br>
@@ -304,23 +304,34 @@ function getUserFeedback() {
 }
 
 function saveCsv() {
-  const data = [["answer_keyword", "question", "answers", "feedback"]];
+  var log_data = { answer_keyword: [], question: [], answers: [] };
   for (var i = 0; i < saveLogger["userQuestions"].length; i++) {
-    data.push([
-      saveLogger["answer_keyword"][i],
-      saveLogger["userQuestions"][i],
-      changeBoolans(saveLogger["botAnswers"][i]),
-      saveLogger["userFeedbackIdx"][i + 1], //맨 처음이 공백이 들어간다..
-    ]);
+    log_data["answer_keyword"].push(saveLogger["answer_keyword"][i]);
+    log_data["question"].push(saveLogger["userQuestions"][i]);
+    //맞게 대답했다고 feedback 한 경우
+    if (saveLogger["userFeedbackIdx"][i + 1] == 1) {
+      log_data["answers"].push(changeBoolans(saveLogger["botAnswers"][i]));
+    }
+    // 봇이 잘못 대답한 경우
+    else {
+      false_answer = changeBoolans(saveLogger["botAnswers"][i]);
+      if (false_answer == 1) {
+        log_data["answers"].push(0);
+      } else {
+        log_data["answers"].push(1);
+      }
+    }
   }
-
-  let csvContent = "data:text/csv;charset=utf-8," + data.map((e) => e.join(",")).join("\n");
-  var encodedUri = encodeURI(csvContent);
-  var link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", "my_data.csv");
-  document.body.appendChild(link);
-  link.click();
+  console.log(log_data);
+  // api 전송
+  $.get("/get_feedback", {
+    answer_keyword: log_data["answer_keyword"].toString(), //list 전송시 null 전송됨
+    question: log_data["question"].toString(),
+    answers: log_data["answers"].toString(),
+  }).done(function (data) {
+    console.log(data);
+    console.log("send feedback to huggingface");
+  });
 }
 // 네 맞습니다, 아니오. 틀립니다를 1,0으로 변경하는 함수
 function changeBoolans(data) {

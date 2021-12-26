@@ -56,5 +56,16 @@ async def get_boolqa_bot_response():
         async with session.post(url, json=data) as resp:
             return ((await resp.json())['result'])
 
+@app.route("/get_feedback")
+async def get_user_feedback():
+    answer_keyword = request.args.get('answer_keyword')
+    answers = request.args.get('answers')
+    question = request.args.get('question')
+    data = {'answer_keyword': answer_keyword.split(','), 'answers': list(map(int, answers.split(','))),'question':question.split(',')}
+    async with aiohttp.ClientSession() as session:
+        url = 'http://14.49.45.219:9091/get_feedback'
+        async with session.post(url, json=data) as resp:
+            return data#((await resp.json())['result'])
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
