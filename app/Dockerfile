@@ -1,6 +1,6 @@
 FROM python:3.8
 
-ADD ./ /app
+ADD ./app /app
 
 # RUN apt-get update -y && \
 #     apt-get install -y python-pip python-dev
