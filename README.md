@@ -106,10 +106,9 @@ $ python test_extraction_qa_inference.py
 ## Software
 
 Web Frameworks
-
 - [Bootstrap](https://getbootstrap.com/)
-
 - [jQuery](https://jquery.com/)
-
 - [FastAPI](https://github.com/tiangolo/fastapi)
+- [Airflow](https://airflow.apache.org/)
+
 
