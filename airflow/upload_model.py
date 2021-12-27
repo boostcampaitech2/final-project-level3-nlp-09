@@ -8,8 +8,8 @@ HUGGINGFACE_AUTH_TOKEN = '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'
 def get_config():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--load_model_path', type=str, default = '/opt/ml/yes_no/save_model', 
-                        help='model save dir path (default : /opt/ml/yes_no/save_model') 
+    parser.add_argument('--load_model_path', type=str, default = '/home/dain/airflow_no_docker/save_model', 
+                        help='model save dir path (default : /home/dain/airflow_no_docker/save_model') 
     parser.add_argument('--model_name', type=str, default='quarter100/BoolQ_dain_test',
                         help='model type (default: quarter100/BoolQ_dain_test)')
     
@@ -35,12 +35,14 @@ if __name__ == '__main__':
     model.push_to_hub(
         "BoolQ_dain_test",
         use_temp_dir=True, 
-        organization="quarter100"
+        organization="quarter100",
+        use_auth_token = HUGGINGFACE_AUTH_TOKEN
         )
         
     tokenizer= AutoTokenizer.from_pretrained(args.model_name)
     tokenizer.push_to_hub(
         "BoolQ_dain_test",
         use_temp_dir=True, 
-        organization="quarter100"
+        organization="quarter100",
+        use_auth_token = HUGGINGFACE_AUTH_TOKEN
         )
