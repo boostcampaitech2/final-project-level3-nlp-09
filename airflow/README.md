@@ -1,43 +1,29 @@
-# Airflow
+# final-project-level3-nlp-09  
+final-project-level3-nlp-09 created by GitHub Classroom  
+* This is feat/front branch  
+    * cd front  
+    * python myapp.py  
 
-## Generate fernet key
-Copy & paste to docker-compose.yaml.
-
-```sh
-python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+### Run servers
 ```
-## Build
-```bash
-curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.2.0/docker-compose.yaml'
-mkdir ./dags ./logs ./plugins
-echo -e "AIRFLOW_UID=$(id -u)\nAIRFLOW_GID=0" > .env
-docker-compose up airflow-init
-docker-compose up -d
+$ docker-compose up -d --build rabbitmq api app
 ```
-## Set admin user
-Set admin user, if admin user doesn't exit.
-```bash
-#to use cli command
-curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.2.0/airflow.sh'
-chmod +x airflow.sh
-./airflow.sh bash
-
-#set user config example
-airflow users create \
-    --username admin \
-    --firstname Chungchoon \
-    --lastname Hindi \
-    --role Admin \
-    --email relilau00@gmail.com
+### Run web
+```
+$ API_URI=xxxx docker-compose up -d --build web
+```
+### Run worker (cuda environment)
+```
+/worker $ python3 -m pip install -r ./requirements.txt
+/worker $ FILE_SERVER=http://{API_HOST}:8080 \
+  RABBITMQ_HOST={RABBIT_MQ_HOST} \
+  QUEUE_NAME=IMAGE-PROCESS \
+  RESULT_SUFFIX=_result \
+  ACCESS_TOKEN=TOKEN_FOR_DIRECT_UPLOAD \
+  DOWNLOAD_PATH=./files \
+  python3 main.py
 ```
 
-## Every files and data dir should locate in **dags** directory
-```bash
-#first, clone this repo
-cp -r ./final-project-level3-nlp-09/* opt/airflow/dags
-```
+### API server
+[API document](api/README.md)
 
-## Airflow Web Server
-* localhost:8080
-* default ID / PW : airflow / airflow
-* Unpause **DAG:retrain** on web

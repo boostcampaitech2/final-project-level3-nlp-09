@@ -1,0 +1,6 @@
+sklearn==0.0
+transformers==4.12.5
+torch==1.6.0
+tqdm==4.62.3
+datasets==1.16.1
+wandb==0.12.7

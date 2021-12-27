@@ -9,6 +9,9 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 import numpy as np
 
+from datasets import load_dataset
+from datasets import Dataset
+
 data = {
         'category': '', 
         'context': '', 
@@ -165,3 +168,38 @@ async def get_inference(item: Request):
         return 'Test String입니다!!!!!!'
 
 
+@app.post("/get_feedback")
+async def get_user_feedback(item: Request):
+    if not api_server_testing == 'TESTING':
+        try:
+            
+            #api key 가져오기
+            f = open("./hf_key.txt",'r')
+            api_key = f.readline()
+            f.close()
+            
+            # 추가해야하는 data
+            new_log = await item.json()
+            #new_log = item_dict['data']
+            new_log_data = Dataset.from_dict(new_log)
+
+            try: # 이어쓰기
+                # 최신버전 가져오기
+                dataset = load_dataset("quarter100/boolq_log")
+                # log 추가
+                for new_data in new_log_data:
+                    dataset['train'] = dataset['train'].add_item(new_data)
+                # 새로운 data 업로드
+                dataset.push_to_hub("quarter100/boolq_log",token = api_key)
+
+            except ValueError: # 재학습 시켜서 log가 비어있는 경우
+                new_log_data.push_to_hub("quarter100/boolq_log",token = api_key)
+
+            return {'result': 'Done!'}
+
+        except:
+            err = traceback.format_exc()
+            print(err)
+            return {'Error': err}
+    else:
+        return {'result': 'Done!'}
