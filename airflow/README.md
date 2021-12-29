@@ -1,22 +1,13 @@
 # Airflow
 
-## Generate fernet key
-Copy & paste to docker-compose.yaml.
-
-```sh
-python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
-```
-## Build
+## Build (Docker)
 ```bash
 curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.2.0/docker-compose.yaml'
 mkdir ./dags ./logs ./plugins
 echo -e "AIRFLOW_UID=$(id -u)\nAIRFLOW_GID=0" > .env
 docker-compose up airflow-init
 docker-compose up -d
-```
-## Set admin user
-Set admin user, if admin user doesn't exit.
-```bash
+
 #to use cli command
 curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.2.0/airflow.sh'
 chmod +x airflow.sh
@@ -31,10 +22,31 @@ airflow users create \
     --email relilau00@gmail.com
 ```
 
-## Every files and data dir should locate in **dags** directory
+## Build (Virtual Env)
+```bash
+source .venv/bin/activate
+pip install pip --upgrade
+pip install 'apache-airflow==2.2.0'
+export AIRFLOW_HOME=.
+airflow db init
+
+#set user config example
+airflow users create \
+    --username admin \
+    --firstname Chungchoon \
+    --lastname Hindi \
+    --role Admin \
+    --email relilau00@gmail.com
+
+#run webserver & scheduler
+airflow webserver --port 8080
+airflow scheduler
+```
+
+## retrain.py should locate in **dags** directory
 ```bash
 #first, clone this repo
-cp -r ./final-project-level3-nlp-09/* opt/airflow/dags
+cp -r ./final-project-level3-nlp-09/retrain.py opt/airflow/dags/retrain.py
 ```
 
 ## Airflow Web Server

@@ -29,7 +29,7 @@ app.add_middleware(
 
 
 @app.post("/set_category")
-async def set_category(item: Request):
+async def set_category_ex(item: Request):
     """
     Context 카테고리 설정
     item:

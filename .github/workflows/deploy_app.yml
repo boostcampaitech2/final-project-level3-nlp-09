@@ -1,0 +1,70 @@
+name: App Build and Deploy
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'app/**'
+env:
+  DOCKER_IMAGE: ghcr.io/keemdy/final-project-level3-nlp-09
+  VERSION: ${{ github.sha }}
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v2
+      - name: Set up docker buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Cache docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ env.VERSION }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: Login to ghcr
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.CR_PAT }}
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./app
+          file: ./app/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
+#           tags: ${{ env.DOCKER_IMAGE }}
+
+  deploy:
+    needs: build
+    name: Deploy
+    runs-on: [ self-hosted, label-development ]
+    steps:
+      - name: Login to ghcr
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.CR_PAT }}
+      - name: Docker run
+        run: |
+          pwd
+          docker ps -a
+          docker ps -q --filter "name=app" | grep -q . && docker stop app && docker rm -fv app
+          docker run --gpus all -d -p 5000:5000 --name app --restart always ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
+  cleanup:
+    needs: [ build, deploy ]
+    name: Clean up docker images
+    runs-on: [ self-hosted, development ]
+    steps:
+      -   name: Clean up docker images
+          run:
+            docker rmi $(docker images --filter "before=${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}" --filter=reference="${{ env.DOCKER_IMAGE }}:*" -q)

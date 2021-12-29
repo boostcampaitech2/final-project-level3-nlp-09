@@ -1,4 +1,4 @@
-name: DEV CI
+name: Extraction model Build and Deploy
 
 on:
   push:
@@ -33,12 +33,17 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.CR_PAT }}
+      - name: Copy Diretory
+        run: |
+          rm -rf api/extraction-mrc/QA_model
+          cp -r QA_model/data api/extraction-mrc/QA_model
+          ls api/extraction-mrc
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
-          context: ./
+          context: ./api/extraction-mrc
           file: ./api/extraction-mrc/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
@@ -59,8 +64,8 @@ jobs:
         run: |
           pwd
           docker ps -a
-          docker ps -q --filter "name=last" | grep -q . && docker stop last && docker rm -fv last
-          docker run --gpus all -d -p 9090:9090 --name last --restart always ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
+          docker ps -q --filter "name=em-api-server" | grep -q . && docker stop em-api-server && docker rm -fv em-api-server
+          docker run --gpus all -d -p 9090:9090 --name em-api-server --restart always ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
   cleanup:
     needs: [ build, deploy ]
     name: Clean up docker images
