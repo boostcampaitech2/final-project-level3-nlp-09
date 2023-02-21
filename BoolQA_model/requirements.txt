@@ -2,5 +2,5 @@ bentoml==0.13.1
 torch==1.10.1
 transformers==4.14.1
 pandas==0.25.1
-numpy==1.21.0
+numpy==1.22.0
 streamlit
